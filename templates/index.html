@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>منصة مراسلات {{ company_name }}</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header>
+    <h1>منصة مراسلات {{ company_name }}</h1>
+    <a href="/admin">لوحة تحكم الإدارة</a>
+  </header>
+
+  <main class="grid">
+    <section class="panel">
+      <h2>المحادثات</h2>
+      <ul id="conversation-list"></ul>
+    </section>
+
+    <section class="panel">
+      <h2>الرسائل</h2>
+      <div id="messages" class="messages"></div>
+      <textarea id="message-input" placeholder="اكتب رسالتك..."></textarea>
+      <div class="actions">
+        <button id="send-btn">إرسال داخل المنصة</button>
+        <button id="ai-btn">اقتراح رد بالذكاء الاصطناعي</button>
+        <button id="wa-btn">إرسال عبر واتساب أعمال</button>
+      </div>
+      <small>الموظف الافتراضي للإرسال: المهندس أحمد (id=2)</small>
+    </section>
+  </main>
+
+  <script>
+    let selectedConversation = null;
+    let selectedClientWa = null;
+
+    async function loadConversations() {
+      const res = await fetch('/api/conversations');
+      const data = await res.json();
+      const list = document.getElementById('conversation-list');
+      list.innerHTML = '';
+
+      data.forEach((conv) => {
+        const item = document.createElement('li');
+        item.innerHTML = `<strong>${conv.subject}</strong><br><small>${conv.employee_name} ⇆ ${conv.client_name}</small>`;
+        item.onclick = () => selectConversation(conv);
+        list.appendChild(item);
+      });
+
+      if (data.length && !selectedConversation) {
+        selectConversation(data[0]);
+      }
+    }
+
+    async function selectConversation(conv) {
+      selectedConversation = conv;
+      const res = await fetch(`/api/conversations/${conv.id}/messages`);
+      const messages = await res.json();
+
+      selectedClientWa = conv.client_name;
+      const box = document.getElementById('messages');
+      box.innerHTML = messages.map(
+        (m) => `<div class="msg ${m.sender_role}"><b>${m.sender_name}:</b> ${m.content}<span>${m.channel}</span></div>`
+      ).join('');
+    }
+
+    async function send(channel='platform') {
+      if (!selectedConversation) return;
+      const input = document.getElementById('message-input');
+      const content = input.value.trim();
+      if (!content) return;
+
+      await fetch('/api/messages', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          conversation_id: selectedConversation.id,
+          sender_id: 2,
+          receiver_id: selectedConversation.client_id || 4,
+          content,
+          channel,
+        })
+      });
+
+      input.value = '';
+      await selectConversation(selectedConversation);
+    }
+
+    document.getElementById('send-btn').onclick = () => send('platform');
+
+    document.getElementById('ai-btn').onclick = async () => {
+      if (!selectedConversation) return;
+      const res = await fetch(`/api/conversations/${selectedConversation.id}/messages`);
+      const messages = await res.json();
+
+      const aiRes = await fetch('/api/ai/suggest', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({messages}),
+      });
+      const aiData = await aiRes.json();
+      document.getElementById('message-input').value = aiData.suggestion;
+    };
+
+    document.getElementById('wa-btn').onclick = async () => {
+      const text = document.getElementById('message-input').value.trim();
+      if (!text) return;
+
+      await fetch('/api/whatsapp/send', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          to: '966511111111',
+          body: text,
+        }),
+      });
+      await send('whatsapp');
+    };
+
+    loadConversations();
+  </script>
+</body>
+</html>
