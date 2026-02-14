@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>لوحة الإدارة</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header>
+    <h1>لوحة تحكم الإدارة</h1>
+    <a href="/mail/">العودة إلى المراسلات</a>
+  </header>
+
+  <main>
+    <section class="cards">
+      <div class="card"><h3>عدد المحادثات</h3><p id="total_conversations">0</p></div>
+      <div class="card"><h3>عدد الرسائل</h3><p id="total_messages">0</p></div>
+      <div class="card"><h3>الموظفون</h3><p id="employees">0</p></div>
+      <div class="card"><h3>العملاء</h3><p id="clients">0</p></div>
+    </section>
+
+    <section class="panel">
+      <h2>آخر الرسائل</h2>
+      <table>
+        <thead>
+          <tr><th>المرسل</th><th>المستقبل</th><th>القناة</th><th>المحتوى</th><th>الوقت</th></tr>
+        </thead>
+        <tbody id="recent-table"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script>
+    async function loadStats() {
+      const res = await fetch('/api/admin/stats');
+      const data = await res.json();
+      Object.entries(data.stats).forEach(([k,v]) => {
+        const el = document.getElementById(k);
+        if (el) el.textContent = v;
+      });
+
+      const table = document.getElementById('recent-table');
+      table.innerHTML = data.recent_messages.map((r) =>
+        `<tr><td>${r.sender_name}</td><td>${r.receiver_name}</td><td>${r.channel}</td><td>${r.content}</td><td>${r.created_at}</td></tr>`
+      ).join('');
+    }
+    loadStats();
+  </script>
+</body>
+</html>
