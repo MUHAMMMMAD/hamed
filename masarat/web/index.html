@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MASARAT AI — منصة تسعير المناقصات</title>
+<style>
+  :root{ --navy:#1F4E78; --navy2:#2c6aa0; --bg:#f4f6fa; --card:#fff;
+         --ok:#1e7d34; --warn:#b8860b; --bad:#b3261e; --line:#e2e8f0; }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Segoe UI",Tahoma,sans-serif;background:var(--bg);color:#1a2433}
+  header{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;padding:22px 28px}
+  header h1{margin:0;font-size:22px}
+  header p{margin:6px 0 0;opacity:.9;font-size:13px}
+  .wrap{max-width:1100px;margin:0 auto;padding:20px}
+  nav{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}
+  nav button{background:#fff;border:1px solid var(--line);padding:10px 16px;border-radius:10px;
+             cursor:pointer;font-size:14px;font-weight:600;color:var(--navy)}
+  nav button.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:18px;
+        box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  .card h2{margin:0 0 14px;font-size:17px;color:var(--navy)}
+  .row{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
+  label{display:block;font-size:13px;margin-bottom:4px;color:#475569;font-weight:600}
+  input,select{padding:9px 11px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-family:inherit}
+  .btn{background:var(--navy);color:#fff;border:none;padding:11px 20px;border-radius:9px;cursor:pointer;
+       font-size:14px;font-weight:700}
+  .btn:hover{background:var(--navy2)}
+  .btn.alt{background:#eef2f7;color:var(--navy)}
+  .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;margin:3px}
+  .badge.real{background:#d8f3df;color:var(--ok)} .badge.mock{background:#fdecc8;color:var(--warn)}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:right}
+  th{background:#eef2f7;color:var(--navy)}
+  tr:nth-child(even) td{background:#fafbfd}
+  .verdict{font-size:20px;font-weight:800;padding:14px;border-radius:10px;text-align:center;margin-bottom:14px}
+  .v-BID{background:#d8f3df;color:var(--ok)} .v-NO_BID{background:#f9d9d6;color:var(--bad)}
+  .v-BID_WITH_CONDITIONS{background:#fdecc8;color:var(--warn)}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:14px}
+  .kpi{background:#f7f9fc;border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center}
+  .kpi .v{font-size:20px;font-weight:800;color:var(--navy)} .kpi .l{font-size:12px;color:#64748b;margin-top:3px}
+  .muted{color:#64748b;font-size:13px} .hidden{display:none}
+  .spin{display:inline-block;width:16px;height:16px;border:3px solid #fff6;border-top-color:#fff;
+        border-radius:50%;animation:s .8s linear infinite;vertical-align:middle}
+  @keyframes s{to{transform:rotate(360deg)}}
+  pre{white-space:pre-wrap;background:#f7f9fc;border:1px solid var(--line);border-radius:8px;padding:12px;font-size:13px}
+</style>
+</head>
+<body>
+<header>
+  <h1>🏗️ MASARAT AI — منصة ذكاء التكاليف</h1>
+  <p>مجلس ذكاء اصطناعي متعدد النماذج لتسعير ودراسة المناقصات · شركة مسارات التشييد</p>
+</header>
+
+<div class="wrap">
+  <nav>
+    <button data-tab="analyze" class="active">📊 تحليل مشروع</button>
+    <button data-tab="data">🗂️ بياناتي الفعلية</button>
+    <button data-tab="council">🧠 مجلس الذكاء</button>
+    <button data-tab="prices">💲 الأسعار</button>
+  </nav>
+
+  <!-- ============ تحليل مشروع ============ -->
+  <section id="tab-analyze">
+    <div class="card">
+      <h2>تشغيل سريع</h2>
+      <p class="muted">جرّب النظام فوراً على مشروع نموذجي (مبنى إداري) دون رفع أي ملف.</p>
+      <button class="btn" id="btnDemo">▶ تشغيل المشروع النموذجي</button>
+    </div>
+
+    <div class="card">
+      <h2>رفع جدول كميات (BOQ)</h2>
+      <p class="muted">ارفع ملف Excel (.xlsx) أو CSV — يكتشف النظام الأعمدة تلقائياً.</p>
+      <div class="row">
+        <div><label>اسم المشروع</label><input id="pName" placeholder="مثال: مبنى تجاري"></div>
+        <div><label>العميل</label><input id="pClient" placeholder="اسم العميل"></div>
+        <div><label>النوع</label>
+          <select id="pType">
+            <option value="government">حكومي</option>
+            <option value="private" selected>خاص</option>
+            <option value="epc">EPC</option>
+            <option value="subcontract">مقاول باطن</option>
+          </select>
+        </div>
+        <div><label>المدة (شهر)</label><input id="pDur" type="number" value="12" style="width:90px"></div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <div><label>ملف BOQ</label><input id="boqFile" type="file" accept=".xlsx,.csv"></div>
+        <button class="btn" id="btnUpload">⬆ رفع وتحليل</button>
+      </div>
+    </div>
+
+    <div id="results" class="hidden"></div>
+  </section>
+
+  <!-- ============ بياناتي الفعلية ============ -->
+  <section id="tab-data" class="hidden">
+    <div class="card">
+      <h2>القوالب الجاهزة</h2>
+      <p class="muted">نزّل القوالب، املأها ببيانات مسارات التشييد الفعلية، ثم ارفع قالب الأسعار.</p>
+      <div class="row">
+        <a class="btn alt" href="/templates/boq">⬇ قالب جدول الكميات</a>
+        <a class="btn alt" href="/templates/prices">⬇ قالب الأسعار (مُعبّأ)</a>
+      </div>
+    </div>
+    <div class="card">
+      <h2>استيراد الأسعار الفعلية</h2>
+      <p class="muted">ارفع قالب الأسعار بعد تعبئته — تُحدَّث قاعدة بيانات النظام فوراً.</p>
+      <div class="row">
+        <input id="pricesFile" type="file" accept=".xlsx">
+        <button class="btn" id="btnImportPrices">⬆ استيراد</button>
+      </div>
+      <div id="importResult" class="muted" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <!-- ============ مجلس الذكاء ============ -->
+  <section id="tab-council" class="hidden">
+    <div class="card">
+      <h2>مداولة مجلس النماذج</h2>
+      <div id="providers" style="margin-bottom:14px"></div>
+      <div class="row">
+        <div style="flex:1"><label>سؤالك للمجلس</label>
+          <input id="q" style="width:100%" placeholder="مثال: ما اتجاه أسعار الحديد في السوق السعودي؟"></div>
+        <button class="btn" id="btnAsk">اسأل المجلس</button>
+      </div>
+      <div id="councilOut" style="margin-top:14px"></div>
+    </div>
+  </section>
+
+  <!-- ============ الأسعار ============ -->
+  <section id="tab-prices" class="hidden">
+    <div class="card">
+      <h2>قواعد الأسعار الحالية</h2>
+      <button class="btn alt" id="btnPrices">تحميل الأسعار</button>
+      <div id="pricesOut" style="margin-top:14px"></div>
+    </div>
+  </section>
+
+  <p class="muted" style="text-align:center;margin:24px 0">
+    تنبيه واقعي: لا يضمن أي نظام دقة 99.99% قبل التنفيذ. الهدف 80–90% مبدئياً، صعوداً إلى 95–98% بربط البيانات الفعلية.
+  </p>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const money = n => (n||0).toLocaleString('en-US',{maximumFractionDigits:0}) + ' ريال';
+
+// تبويبات
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  ['analyze','data','council','prices'].forEach(t=>$('#tab-'+t).classList.add('hidden'));
+  $('#tab-'+b.dataset.tab).classList.remove('hidden');
+});
+
+async function api(path, opts){ const r = await fetch(path, opts); if(!r.ok){ throw new Error((await r.json()).detail || r.status);} return r.json(); }
+function loading(btn,on){ btn.disabled=on; btn.dataset.t=btn.dataset.t||btn.innerHTML; btn.innerHTML = on?'<span class="spin"></span> جاري...':btn.dataset.t; }
+
+function renderAnalysis(a, excelFile){
+  const d=a.decision, c=a.cost, r=a.risk, cf=a.cashflow;
+  const vclass='v-'+d.decision;
+  const vtext={BID:'✅ تقديم (BID)',NO_BID:'❌ عدم التقديم (NO BID)',BID_WITH_CONDITIONS:'⚠️ تقديم بشروط'}[d.decision];
+  let html = `<div class="card"><div class="verdict ${vclass}">${vtext}</div>
+    <div class="kpis">
+      <div class="kpi"><div class="v">${d.score}</div><div class="l">درجة القرار /100</div></div>
+      <div class="kpi"><div class="v">${d.win_probability}%</div><div class="l">احتمال الفوز</div></div>
+      <div class="kpi"><div class="v">${c.margin_pct}%</div><div class="l">هامش الربح</div></div>
+      <div class="kpi"><div class="v">${r.overall_level}</div><div class="l">مستوى المخاطر</div></div>
+    </div>
+    <div class="kpis">
+      <div class="kpi"><div class="v">${money(c.direct_cost)}</div><div class="l">التكلفة المباشرة</div></div>
+      <div class="kpi"><div class="v">${money(c.selling_price)}</div><div class="l">سعر البيع</div></div>
+      <div class="kpi"><div class="v">${money(c.final_price)}</div><div class="l">شامل الضريبة</div></div>
+      <div class="kpi"><div class="v">${money(cf.peak_funding_required)}</div><div class="l">أقصى تمويل مطلوب</div></div>
+    </div>
+    <p class="muted">${d.rationale}</p>
+    ${excelFile?`<a class="btn" href="/download/${excelFile}">⬇ تحميل ملف Excel الكامل</a>`:''}
+  </div>`;
+
+  // تفصيل التكلفة
+  const cr=[['المواد',c.materials],['العمالة',c.labor],['المعدات',c.equipment],
+    ['مقاولو الباطن',c.subcontractors],['غير مصنّف',c.other],['<b>التكلفة المباشرة</b>',c.direct_cost],
+    ['مصاريف إدارية',c.overhead],['احتياطي',c.contingency],['تعديل المخاطر',c.risk_adjustment],
+    ['<b>إجمالي التكلفة</b>',c.total_cost],['الربح',c.profit],['<b>سعر البيع</b>',c.selling_price],
+    ['ضريبة 15%',c.vat],['<b>السعر النهائي</b>',c.final_price]];
+  html += `<div class="card"><h2>تفصيل التكلفة</h2><table><tr><th>البند</th><th>القيمة</th></tr>`+
+    cr.map(x=>`<tr><td>${x[0]}</td><td>${money(x[1])}</td></tr>`).join('')+`</table></div>`;
+
+  // المخاطر
+  html += `<div class="card"><h2>سجل المخاطر (معامل ${r.risk_factor_pct}%)</h2><table>
+    <tr><th>الفئة</th><th>الوصف</th><th>الدرجة</th><th>المستوى</th><th>التخفيف</th></tr>`+
+    r.items.map(x=>`<tr><td>${x.category}</td><td>${x.description}</td><td>${x.score}</td><td>${x.level}</td><td>${x.mitigation}</td></tr>`).join('')+`</table></div>`;
+
+  // التدفقات
+  html += `<div class="card"><h2>التدفقات النقدية</h2><table>
+    <tr><th>الشهر</th><th>التكلفة</th><th>الإيراد</th><th>الصافي</th><th>التراكمي</th></tr>`+
+    cf.months.map(m=>`<tr><td>${m.month}</td><td>${money(m.cost)}</td><td>${money(m.revenue)}</td><td>${money(m.net)}</td><td>${money(m.cumulative)}</td></tr>`).join('')+`</table></div>`;
+
+  $('#results').innerHTML = html;
+  $('#results').classList.remove('hidden');
+  $('#results').scrollIntoView({behavior:'smooth'});
+}
+
+// تشغيل النموذجي
+$('#btnDemo').onclick = async e=>{ loading(e.target,true);
+  try{ const d = await api('/ui/demo'); renderAnalysis(d.analysis, d.excel_file); }
+  catch(err){ alert('خطأ: '+err.message); } finally{ loading(e.target,false); } };
+
+// رفع وتحليل
+$('#btnUpload').onclick = async e=>{
+  const f = $('#boqFile').files[0]; if(!f){ alert('اختر ملف BOQ أولاً'); return; }
+  const fd = new FormData();
+  fd.append('file', f); fd.append('name',$('#pName').value); fd.append('client',$('#pClient').value);
+  fd.append('project_type',$('#pType').value); fd.append('duration_months',$('#pDur').value);
+  loading(e.target,true);
+  try{ const d = await api('/ui/analyze',{method:'POST',body:fd}); renderAnalysis(d.analysis, d.excel_file); }
+  catch(err){ alert('خطأ في القراءة: '+err.message); } finally{ loading(e.target,false); } };
+
+// استيراد الأسعار
+$('#btnImportPrices').onclick = async e=>{
+  const f = $('#pricesFile').files[0]; if(!f){ alert('اختر قالب الأسعار'); return; }
+  const fd = new FormData(); fd.append('file', f); loading(e.target,true);
+  try{ const d = await api('/ui/import-prices',{method:'POST',body:fd});
+    $('#importResult').innerHTML = '✅ تم الاستيراد: '+JSON.stringify(d.imported); }
+  catch(err){ $('#importResult').innerHTML='❌ '+err.message; } finally{ loading(e.target,false); } };
+
+// المجلس
+async function loadProviders(){
+  const ps = await api('/providers');
+  $('#providers').innerHTML = ps.map(p=>`<span class="badge ${p.available?'real':'mock'}" title="${p.role}">${p.display_name} · ${p.mode}</span>`).join('');
+}
+$('#btnAsk').onclick = async e=>{
+  const q=$('#q').value.trim(); if(!q){ alert('اكتب سؤالاً'); return; } loading(e.target,true);
+  try{ const d = await api('/council',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q})});
+    $('#councilOut').innerHTML = `<pre>${d.summary}</pre><p class="muted">ثقة الإجماع: ${d.consensus_confidence}%</p>`+
+      d.responses.map(r=>`<div class="card"><b>${r.display_name}</b> <span class="muted">(${r.role})</span><pre>${r.content}</pre></div>`).join('');
+  }catch(err){ alert(err.message);} finally{ loading(e.target,false); } };
+
+// الأسعار
+$('#btnPrices').onclick = async e=>{ loading(e.target,true);
+  try{ const p = await api('/prices');
+    const tbl=(title,rows,cols)=>`<div class="card"><h2>${title}</h2><table><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr>`+
+      rows.map(r=>`<tr>${r.map(x=>`<td>${x}</td>`).join('')}</tr>`).join('')+`</table></div>`;
+    $('#pricesOut').innerHTML =
+      tbl('المواد', p.materials.map(m=>[m.name_ar,m.unit_price+' / '+m.unit,m.trend_pct+'%']), ['المادة','السعر','الاتجاه'])+
+      tbl('العمالة', p.labor.map(l=>[l.name_ar,l.daily_rate+' ريال/يوم']), ['المهنة','الأجر'])+
+      tbl('مقاولو الباطن', p.subcontractors.map(s=>[s.activity,s.name,s.unit_price+' /'+s.unit]), ['النشاط','المقاول','السعر']);
+  }catch(err){ alert(err.message);} finally{ loading(e.target,false); } };
+
+loadProviders();
+</script>
+</body>
+</html>

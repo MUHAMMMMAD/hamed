@@ -99,6 +99,7 @@ def export_excel(a: TenderAnalysis, path: str | Path | None = None) -> Path:
         ("العمالة", a.cost.labor),
         ("المعدات", a.cost.equipment),
         ("مقاولو الباطن", a.cost.subcontractors),
+        ("غير مصنّف (سعر إجمالي)", a.cost.other),
         ("التكلفة المباشرة", a.cost.direct_cost),
         ("مصاريف إدارية", a.cost.overhead),
         ("احتياطي", a.cost.contingency),

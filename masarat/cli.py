@@ -16,6 +16,12 @@ import sys
 
 from . import __app_name__, __version__, config
 from .database import db, load_sample_tender, load_tender_from_file
+from .io import (
+    generate_boq_template,
+    generate_prices_template,
+    import_boq,
+    import_prices,
+)
 from .llm.council import Council
 from .pipeline import analyze_tender
 from .reports import build_report, export_excel
@@ -82,6 +88,51 @@ def cmd_analyze(args) -> None:
     _run_analysis(tender)
 
 
+def cmd_import_boq(args) -> None:
+    _print_header()
+    tender = import_boq(
+        args.file,
+        name=args.name,
+        client=args.client,
+        project_type=args.type,
+        duration_months=args.duration,
+    )
+    print(f"\n▶ تم استيراد {len(tender.items)} بنداً من: {args.file}\n")
+    _run_analysis(tender)
+
+
+def cmd_template(args) -> None:
+    _print_header()
+    if args.kind == "boq":
+        path = generate_boq_template()
+        print(f"\n✓ قالب جدول الكميات: {path}")
+    else:
+        path = generate_prices_template()
+        print(f"\n✓ قالب الأسعار (مُعبّأ بالبيانات الحالية): {path}")
+    print("املأ القالب ببياناتك الفعلية ثم استورده.")
+
+
+def cmd_import_prices(args) -> None:
+    _print_header()
+    result = import_prices(args.file)
+    print(f"\n✓ تم استيراد الأسعار الفعلية إلى النظام:")
+    for sheet, n in result.get("imported", {}).items():
+        print(f"   {sheet}: {n} سجلاً")
+    if result.get("errors"):
+        print("\n⚠️ صفوف تم تخطّيها:")
+        for e in result["errors"][:10]:
+            print(f"   - {e}")
+
+
+def cmd_serve(args) -> None:
+    import uvicorn
+
+    _print_header()
+    print(f"\n🌐 لوحة الويب: http://{args.host}:{args.port}/")
+    print(f"📚 توثيق API: http://{args.host}:{args.port}/docs\n")
+    uvicorn.run("masarat.api:app", host=args.host, port=args.port)
+
+
 def cmd_council(args) -> None:
     _print_header()
     result = Council().deliberate(args.question)
@@ -106,6 +157,24 @@ def main(argv: list[str] | None = None) -> int:
     p_an = sub.add_parser("analyze", help="تحليل مناقصة من ملف JSON")
     p_an.add_argument("file", help="مسار ملف المناقصة (BOQ JSON)")
 
+    p_ib = sub.add_parser("import-boq", help="استيراد وتحليل BOQ من Excel/CSV")
+    p_ib.add_argument("file", help="مسار ملف BOQ (.xlsx أو .csv)")
+    p_ib.add_argument("--name", default=None, help="اسم المشروع")
+    p_ib.add_argument("--client", default="غير محدد", help="العميل")
+    p_ib.add_argument("--type", default="private",
+                      choices=["government", "private", "epc", "subcontract"])
+    p_ib.add_argument("--duration", type=int, default=12, help="المدة بالأشهر")
+
+    p_tp = sub.add_parser("template", help="توليد قالب جاهز (BOQ أو الأسعار)")
+    p_tp.add_argument("kind", choices=["boq", "prices"], help="نوع القالب")
+
+    p_ip = sub.add_parser("import-prices", help="استيراد الأسعار الفعلية من قالب Excel")
+    p_ip.add_argument("file", help="مسار قالب الأسعار (.xlsx)")
+
+    p_sv = sub.add_parser("serve", help="تشغيل لوحة الويب + الـ API")
+    p_sv.add_argument("--host", default="127.0.0.1")
+    p_sv.add_argument("--port", type=int, default=8000)
+
     p_co = sub.add_parser("council", help="مداولة جماعية بين النماذج")
     p_co.add_argument("question", help="السؤال المطروح على المجلس")
 
@@ -116,6 +185,10 @@ def main(argv: list[str] | None = None) -> int:
         "status": cmd_status,
         "prices": cmd_prices,
         "analyze": cmd_analyze,
+        "import-boq": cmd_import_boq,
+        "template": cmd_template,
+        "import-prices": cmd_import_prices,
+        "serve": cmd_serve,
         "council": cmd_council,
     }
     if not args.command:

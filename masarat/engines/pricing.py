@@ -22,6 +22,17 @@ class PricingEngine:
     # ------------------------------------------------------------------
     def price_item(self, item) -> None:
         """يحسب تكلفة بند واحد ويملأ حقوله (in-place)."""
+        # حالة BOQ مُسعّر مسبقاً: لا يوجد تحليل سعر، لكن سعر الوحدة معروف
+        if not item.resources and item.unit_rate:
+            item.direct_total = round(item.unit_rate * item.quantity, 2)
+            split = (
+                item.material_cost + item.labor_cost
+                + item.equipment_cost + item.subcontractor_cost
+            )
+            # ما تبقّى بعد أي تفصيل جزئي يُصنّف "غير مصنّف"
+            item.other_cost = round(item.direct_total - split, 2)
+            return
+
         material = labor = equipment = subcontractor = 0.0
 
         for use in item.resources:
@@ -58,15 +69,16 @@ class PricingEngine:
         """يسعّر المناقصة كاملة ويُرجع تفصيل التكلفة."""
         cfg = config or PricingConfig()
 
-        materials = labor = equipment = subs = 0.0
+        materials = labor = equipment = subs = other = 0.0
         for item in tender.items:
             self.price_item(item)
             materials += item.material_cost
             labor += item.labor_cost
             equipment += item.equipment_cost
             subs += item.subcontractor_cost
+            other += item.other_cost
 
-        direct = materials + labor + equipment + subs
+        direct = materials + labor + equipment + subs + other
         overhead = direct * cfg.overhead_pct
         contingency = direct * cfg.contingency_pct
         risk_adj = direct * (risk_factor_pct / 100.0)
@@ -81,6 +93,7 @@ class PricingEngine:
             labor=round(labor, 2),
             equipment=round(equipment, 2),
             subcontractors=round(subs, 2),
+            other=round(other, 2),
             direct_cost=round(direct, 2),
             overhead=round(overhead, 2),
             contingency=round(contingency, 2),

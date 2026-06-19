@@ -51,6 +51,8 @@ def build_report(a: TenderAnalysis) -> str:
     L.append(f"| العمالة | {_money(c.labor)} |")
     L.append(f"| المعدات | {_money(c.equipment)} |")
     L.append(f"| مقاولو الباطن | {_money(c.subcontractors)} |")
+    if c.other:
+        L.append(f"| غير مصنّف (سعر إجمالي) | {_money(c.other)} |")
     L.append(f"| **التكلفة المباشرة** | **{_money(c.direct_cost)}** |")
     L.append(f"| مصاريف إدارية | {_money(c.overhead)} |")
     L.append(f"| احتياطي | {_money(c.contingency)} |")

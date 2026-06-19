@@ -128,6 +128,7 @@ class BOQItem(BaseModel):
     labor_cost: float = 0.0
     equipment_cost: float = 0.0
     subcontractor_cost: float = 0.0
+    other_cost: float = 0.0         # سعر إجمالي غير مُفصّل (من BOQ مُسعّر مسبقاً)
     unit_rate: float = 0.0          # تكلفة الوحدة المباشرة
     direct_total: float = 0.0       # إجمالي البند المباشر
     confidence: float = 0.0         # ثقة الذكاء الاصطناعي %
@@ -165,6 +166,7 @@ class CostBreakdown(BaseModel):
     labor: float = 0.0
     equipment: float = 0.0
     subcontractors: float = 0.0
+    other: float = 0.0              # بنود مُسعّرة بسعر إجمالي بلا تفصيل
     direct_cost: float = 0.0
     overhead: float = 0.0
     contingency: float = 0.0

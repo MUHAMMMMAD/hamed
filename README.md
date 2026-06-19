@@ -16,13 +16,22 @@
 # 1) تثبيت المتطلبات
 pip install -r requirements.txt
 
-# 2) تشغيل التحليل الكامل على مشروع نموذجي (مبنى إداري)
+# 2-أ) لوحة الويب (الأسهل): واجهة رسومية كاملة
+python -m masarat serve
+#     ثم افتح http://127.0.0.1:8000/
+
+# 2-ب) أو سطر الأوامر: تحليل كامل على مشروع نموذجي (مبنى إداري)
 python -m masarat demo
 
-# 3) النتيجة: تقرير تنفيذي في الطرفية + ملف Excel + تقرير Markdown في مجلد output/
+# 3) النتيجة: تقرير تنفيذي + ملف Excel + تقرير Markdown في مجلد output/
 ```
 
 لا تحتاج أي مفاتيح للبدء — النظام يعمل فوراً في الوضع التجريبي.
+
+### 🖥️ لوحة الويب
+واجهة رسومية عربية (RTL) تتيح: تشغيل النموذجي، **رفع جدول كميات (Excel/CSV)
+وتحليله تلقائياً**، تنزيل القوالب، **إدخال أسعارك الفعلية**، مداولة المجلس،
+وتنزيل ملف Excel الكامل — كل ذلك من المتصفح.
 
 ---
 
@@ -95,12 +104,32 @@ python -m masarat demo
 
 ### سطر الأوامر (CLI)
 ```bash
-python -m masarat demo                 # تحليل كامل على المشروع النموذجي
-python -m masarat status               # حالة النماذج الثمانية
-python -m masarat prices               # عرض قواعد الأسعار
-python -m masarat analyze tender.json  # تحليل مناقصة من ملف JSON
-python -m masarat council "سؤالك هنا"  # مداولة جماعية بين النماذج
+python -m masarat serve                    # تشغيل لوحة الويب + الـ API
+python -m masarat demo                      # تحليل كامل على المشروع النموذجي
+python -m masarat status                    # حالة النماذج الثمانية
+python -m masarat prices                    # عرض قواعد الأسعار
+python -m masarat analyze tender.json       # تحليل مناقصة من ملف JSON
+python -m masarat import-boq boq.xlsx       # استيراد وتحليل BOQ من Excel/CSV
+python -m masarat template boq              # توليد قالب جدول كميات
+python -m masarat template prices           # توليد قالب الأسعار (مُعبّأ)
+python -m masarat import-prices prices.xlsx # إدخال أسعارك الفعلية للنظام
+python -m masarat council "سؤالك هنا"       # مداولة جماعية بين النماذج
 ```
+
+### 📥 قارئ جداول الكميات التلقائي (BOQ Auto-Reader)
+يقرأ ملفات **Excel (.xlsx)** و**CSV** بترويسات عربية أو إنجليزية، ويكتشف
+الأعمدة آلياً (الكود/الوصف/الوحدة/الكمية/سعر الوحدة...)، ويتخطّى صفوف العناوين
+والإجماليات. يدعم الجداول المُسعّرة مسبقاً (سعر وحدة إجمالي) أو المُفصّلة
+(مواد/عمالة/معدات/مقاول باطن لكل وحدة).
+
+### 🗂️ إدخال بياناتك الفعلية (Real Data Entry)
+```bash
+python -m masarat template prices           # 1) نزّل القالب (مُعبّأ بالحالي)
+# 2) عدّل القيم بأسعارك/مورديك/مشاريعك الفعلية في output/PRICES_template.xlsx
+python -m masarat import-prices output/PRICES_template.xlsx   # 3) استورد
+```
+أو افعل ذلك كله من لوحة الويب (تبويب «بياناتي الفعلية»). تُحدَّث قاعدة بيانات
+النظام فوراً وتُستخدم في كل التحليلات التالية.
 
 ### واجهة برمجية (REST API)
 ```bash
@@ -110,11 +139,15 @@ uvicorn masarat.api:app --reload
 
 | المسار | الوصف |
 |---|---|
+| `GET /` | لوحة الويب (الواجهة الرسومية) |
 | `GET /providers` | حالة النماذج الثمانية |
 | `GET /prices` | قواعد الأسعار |
 | `GET /demo` | تحليل المشروع النموذجي |
 | `POST /analyze` | رفع مناقصة (BOQ JSON) والحصول على التحليل |
 | `POST /analyze/excel` | رفع مناقصة والحصول على ملف Excel |
+| `POST /ui/analyze` | رفع ملف BOQ (Excel/CSV) وتحليله تلقائياً |
+| `GET /templates/boq` · `GET /templates/prices` | تنزيل القوالب |
+| `POST /ui/import-prices` | استيراد الأسعار الفعلية |
 | `POST /council` | مداولة جماعية بين النماذج |
 
 ### كمكتبة Python
@@ -160,7 +193,9 @@ masarat/
 │   └── council.py       #   المداولة الجماعية المتوازية
 ├── agents/              # الوكلاء الثمانية (CEO ... PMO)
 ├── engines/             # التسعير · المخاطر · القرار · التدفقات
-└── reports/             # تقرير Markdown + ملف Excel
+├── io/                  # قارئ BOQ التلقائي + القوالب + استيراد الأسعار
+├── reports/             # تقرير Markdown + ملف Excel
+└── web/                 # لوحة الويب (index.html)
 data/seed/               # قواعد بيانات قابلة للتعديل (أسعار سعودية)
 ```
 
@@ -190,7 +225,8 @@ data/seed/               # قواعد بيانات قابلة للتعديل (أ
 - [x] **V1** — نواة البيانات + المحركات + الوكلاء + المجلس (الوضع التجريبي).
 - [x] **V2** — تقارير Excel/Markdown + REST API + CLI.
 - [x] **V3** — ربط النماذج الحقيقية عبر API (جاهز، يُفعّل بالمفاتيح).
-- [ ] **V4** — قراءة BOQ/PDF/DWG تلقائياً + تعلّم آلي من المشاريع المنفّذة + لوحة ويب.
+- [x] **V4** — لوحة ويب + قارئ BOQ تلقائي (Excel/CSV) + إدخال البيانات الفعلية.
+- [ ] **V5** — قراءة PDF/DWG تلقائياً + تعلّم آلي من المشاريع المنفّذة.
 
 ---
 
