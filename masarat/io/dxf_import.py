@@ -25,7 +25,12 @@ def _polygon_area(points: List[Tuple[float, float]]) -> float:
 
 def extract_dxf_info(path: str | Path) -> dict:
     """يُرجع ملخّصاً ذكياً عن محتوى ملف DXF."""
-    import ezdxf
+    try:
+        import ezdxf
+    except ImportError as exc:
+        raise RuntimeError(
+            "قراءة DXF تتطلب مكتبة ezdxf. ثبّتها عبر: pip install ezdxf."
+        ) from exc
 
     doc = ezdxf.readfile(str(path))
     msp = doc.modelspace()

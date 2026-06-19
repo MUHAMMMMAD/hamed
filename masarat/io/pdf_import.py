@@ -12,7 +12,13 @@ from typing import List
 
 def extract_pdf_rows(path: str | Path) -> List[List]:
     """يُرجع صفوف الجدول كقوائم خلايا (نص)."""
-    import fitz  # PyMuPDF
+    try:
+        import fitz  # PyMuPDF
+    except ImportError as exc:
+        raise RuntimeError(
+            "قراءة PDF تتطلب مكتبة pymupdf. ثبّتها عبر: pip install pymupdf "
+            "— أو استخدم ملف Excel/CSV بدلاً من PDF."
+        ) from exc
 
     rows: List[List] = []
     doc = fitz.open(str(path))

@@ -1,9 +1,21 @@
-# 🚀 دليل نشر MASARAT AI على خادم الشركة
+# 🚀 دليل نشر MASARAT AI — النطاق: tender.m-t.sa
 
-هذا الدليل لنشر النظام على خادم خاص (VPS / سيرفر الشركة) بحيث يعمل برابط
-دائم يصل إليه فريقك من أي جهاز. توجد طريقتان — اختر واحدة.
+هذا الدليل لنشر النظام بحيث يعمل برابط دائم (**https://tender.m-t.sa**) يصل
+إليه فريقك من أي جهاز، دون المساس بموقعكم الحالي على `m-t.sa`.
 
-**متطلبات الخادم:** Ubuntu 22.04+ · ذاكرة 2GB+ · (نطاق Domain اختياري لـ HTTPS).
+> ### ⚠️ مهم بشأن الاستضافة المشتركة (cPanel)
+> هذا النظام تطبيق **Python (FastAPI)** يحتاج تشغيل خادم — وليس موقعاً ثابتاً
+> (HTML فقط). معظم الاستضافات المشتركة لا تشغّله إلا إذا كانت توفّر ميزة
+> **"Setup Python App"** في cPanel.
+>
+> - **إن كانت متوفّرة لديك** → اتبع **الطريقة (ج) — cPanel** أدناه.
+> - **إن لم تكن متوفّرة** (وهو الأغلب) → الحل الأنظف والأرخص هو **خادم VPS صغير**
+>   (≈ 20 ريال/شهر من Hetzner/Contabo)، وتوجيه النطاق الفرعي `tender.m-t.sa`
+>   إليه عبر سجل DNS — ويبقى موقعكم الرئيسي على cPanel كما هو. اتبع عندها
+>   **الطريقة (أ)**. هذا ما أنصح به بشدة لاستقرار النظام.
+
+**خطوة DNS مشتركة (في كل الحالات):** من لوحة إدارة نطاق `m-t.sa`، أضف سجلاً:
+`A` باسم `tender` يشير إلى عنوان IP الخادم (الـ VPS أو خادم cPanel).
 
 ---
 
@@ -72,7 +84,7 @@ sudo systemctl status masarat        # تأكّد أنها active
 ```nginx
 server {
     listen 80;
-    server_name tender.masarat.com;     # أو عنوان الخادم
+    server_name tender.m-t.sa;     # أو عنوان الخادم
     client_max_body_size 50M;
     location / {
         proxy_pass         http://127.0.0.1:8000;
@@ -99,12 +111,51 @@ sudo systemctl restart masarat
 
 ---
 
+## الطريقة (ج) — استضافة مشتركة cPanel (إن دعمت "Setup Python App")
+
+> تعمل فقط إذا ظهرت أيقونة **"Setup Python App"** في لوحة cPanel.
+
+### 1) رفع الملفات
+ارفع ملفات المشروع إلى مجلد على الخادم (مثل `/home/USER/masarat`) عبر
+**File Manager** أو Git (إن توفّر "Git Version Control" في cPanel):
+```
+المستودع: https://github.com/MUHAMMMMAD/hamed.git
+الفرع:    claude/gallant-cerf-aq45eq
+```
+
+### 2) إنشاء تطبيق Python
+في cPanel → **Setup Python App** → **Create Application**:
+- **Python version:** 3.10 أو أحدث.
+- **Application root:** `masarat` (مجلد المشروع).
+- **Application URL:** `tender.m-t.sa`.
+- **Application startup file:** `passenger_wsgi.py`.
+- **Application Entry point:** `application`.
+
+### 3) تثبيت المتطلبات
+من نفس الصفحة، انسخ أمر "تفعيل البيئة الافتراضية" (`source .../bin/activate`)
+وشغّله في **Terminal** (إن توفّر)، ثم:
+```bash
+pip install -r requirements-min.txt
+```
+> نستخدم `requirements-min.txt` (أخف) لأن الاستضافة المشتركة محدودة الموارد.
+> النواة كاملة تعمل؛ وقراءة PDF/DXF والانحدار في التعلّم تتدرّج بأمان (وتُفعّل
+> لاحقاً بإضافة `pymupdf ezdxf numpy` إن سمحت الموارد).
+
+### 4) التشغيل
+اضغط **Restart** في صفحة التطبيق، ثم افتح `https://tender.m-t.sa/`.
+لتفعيل HTTPS استخدم **SSL/TLS Status → Run AutoSSL** في cPanel.
+
+> إن فشل التثبيت بسبب حدود الموارد (ذاكرة/عمليات)، فهذه إشارة واضحة للانتقال
+> إلى الطريقة (أ) عبر VPS.
+
+---
+
 ## 🔒 تفعيل HTTPS (نطاق + شهادة مجانية)
 
 بعد توجيه نطاقك (سجل A) إلى عنوان الخادم:
 ```bash
 sudo apt install -y certbot python3-certbot-nginx
-sudo certbot --nginx -d tender.masarat.com
+sudo certbot --nginx -d tender.m-t.sa
 ```
 certbot يضيف كتلة 443 ويجدّد الشهادة تلقائياً.
 (في مسار Docker: استخدم حاوية certbot أو أصدر الشهادة ثم فعّل كتلة 443 في

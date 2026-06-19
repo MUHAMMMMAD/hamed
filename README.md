@@ -211,6 +211,11 @@ make install   |   make demo   |   make serve   |   make test   |   make docker
 
 ## 🌐 النشر على خادم الشركة (موقع برابط دائم)
 
+> **ملاحظة:** النظام تطبيق Python (FastAPI) يحتاج خادماً يشغّله — الاستضافة
+> المشتركة (cPanel) تدعمه فقط عبر "Setup Python App"؛ وإلا فالأنسب VPS صغير
+> مع توجيه نطاق فرعي إليه. كل الحالات (Docker · systemd · cPanel) مشروحة في
+> **[`deploy/DEPLOY.md`](deploy/DEPLOY.md)**.
+
 لتشغيل النظام كموقع يصل إليه فريقك من أي جهاز عبر خادم الشركة أو VPS:
 
 ```bash
