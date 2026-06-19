@@ -1,0 +1,27 @@
+# MASARAT AI — تشغيل إنتاجي على خادم الشركة (تطبيق + Nginx وكيل عكسي)
+# الاستخدام:  cp .env.example .env  &&  docker compose up -d --build
+services:
+  app:
+    build: .
+    image: masarat-ai
+    restart: unless-stopped
+    env_file:
+      - .env
+    expose:
+      - "8000"                       # داخلي فقط — لا يُكشف للإنترنت مباشرةً
+    volumes:
+      - ./data/seed:/app/data/seed   # أسعارك الفعلية تبقى محفوظة وقابلة للتعديل
+      - ./output:/app/output         # المخرجات (Excel/التقارير) تبقى على الخادم
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      # - "443:443"                  # فعّلها بعد تركيب شهادة TLS
+    volumes:
+      - ./deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      # - ./deploy/certbot/conf:/etc/letsencrypt:ro     # شهادات Let's Encrypt
+      # - ./deploy/certbot/www:/var/www/certbot:ro

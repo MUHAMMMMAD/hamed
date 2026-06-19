@@ -209,6 +209,23 @@ docker run -p 8000:8000 masarat-ai      # ثم افتح http://localhost:8000/
 make install   |   make demo   |   make serve   |   make test   |   make docker
 ```
 
+## 🌐 النشر على خادم الشركة (موقع برابط دائم)
+
+لتشغيل النظام كموقع يصل إليه فريقك من أي جهاز عبر خادم الشركة أو VPS:
+
+```bash
+# على خادم Ubuntu (بعد تثبيت Docker)
+git clone https://github.com/MUHAMMMMAD/hamed.git && cd hamed
+git checkout claude/gallant-cerf-aq45eq
+bash deploy/deploy.sh          # يبني ويشغّل التطبيق + Nginx
+# ثم افتح:  http://<عنوان-الخادم>/
+```
+
+يشمل الإعداد: **Docker Compose** (تطبيق + **Nginx** وكيل عكسي على المنفذ 80)،
+وخدمة **systemd** كبديل بدون Docker، ودعم **HTTPS** عبر Let's Encrypt، وحفظ
+بياناتك في `data/seed` و`output`. التفاصيل الكاملة خطوة بخطوة في:
+**[`deploy/DEPLOY.md`](deploy/DEPLOY.md)**.
+
 ## 🗂️ بنية المشروع
 
 ```
@@ -229,7 +246,8 @@ masarat/
 └── web/                 # لوحة الويب (index.html)
 data/seed/               # قواعد بيانات قابلة للتعديل (أسعار سعودية)
 tests/                   # اختبارات pytest شاملة (20 اختباراً)
-Dockerfile · Makefile · pyproject.toml   # التثبيت والنشر
+deploy/                  # نشر الخادم: nginx.conf · masarat.service · deploy.sh · DEPLOY.md
+Dockerfile · docker-compose.yml · Makefile · pyproject.toml   # التثبيت والنشر
 ```
 
 كل الأسعار في `data/seed/*.json` **قابلة للتعديل** — حدّثها بأسعارك الفعلية.
