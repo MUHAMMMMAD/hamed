@@ -1,0 +1,12 @@
+.git
+.gitignore
+__pycache__/
+*.pyc
+.venv/
+venv/
+output/
+.env
+*.xlsx
+tests/
+*.md
+!README.md

@@ -70,7 +70,7 @@
 
     <div class="card">
       <h2>رفع جدول كميات (BOQ)</h2>
-      <p class="muted">ارفع ملف Excel (.xlsx) أو CSV — يكتشف النظام الأعمدة تلقائياً.</p>
+      <p class="muted">ارفع ملف Excel (.xlsx) أو CSV أو PDF — يكتشف النظام الأعمدة تلقائياً.</p>
       <div class="row">
         <div><label>اسم المشروع</label><input id="pName" placeholder="مثال: مبنى تجاري"></div>
         <div><label>العميل</label><input id="pClient" placeholder="اسم العميل"></div>
@@ -85,7 +85,7 @@
         <div><label>المدة (شهر)</label><input id="pDur" type="number" value="12" style="width:90px"></div>
       </div>
       <div class="row" style="margin-top:12px">
-        <div><label>ملف BOQ</label><input id="boqFile" type="file" accept=".xlsx,.csv"></div>
+        <div><label>ملف BOQ</label><input id="boqFile" type="file" accept=".xlsx,.csv,.pdf"></div>
         <button class="btn" id="btnUpload">⬆ رفع وتحليل</button>
       </div>
     </div>
@@ -111,6 +111,16 @@
         <button class="btn" id="btnImportPrices">⬆ استيراد</button>
       </div>
       <div id="importResult" class="muted" style="margin-top:10px"></div>
+    </div>
+    <div class="card">
+      <h2>قراءة رسم هندسي (DXF)</h2>
+      <p class="muted">ارفع ملف DXF لاستخراج الطبقات والنصوص والمساحات المغلقة.
+        (لملفات DWG صدّرها إلى DXF أولاً.)</p>
+      <div class="row">
+        <input id="dxfFile" type="file" accept=".dxf">
+        <button class="btn" id="btnDxf">⬆ تحليل الرسم</button>
+      </div>
+      <div id="dxfOut" style="margin-top:10px"></div>
     </div>
   </section>
 
@@ -224,6 +234,21 @@ $('#btnImportPrices').onclick = async e=>{
   try{ const d = await api('/ui/import-prices',{method:'POST',body:fd});
     $('#importResult').innerHTML = '✅ تم الاستيراد: '+JSON.stringify(d.imported); }
   catch(err){ $('#importResult').innerHTML='❌ '+err.message; } finally{ loading(e.target,false); } };
+
+// قراءة DXF
+$('#btnDxf').onclick = async e=>{
+  const f = $('#dxfFile').files[0]; if(!f){ alert('اختر ملف DXF'); return; }
+  const fd = new FormData(); fd.append('file', f); loading(e.target,true);
+  try{ const d = await api('/ui/read-dxf',{method:'POST',body:fd});
+    $('#dxfOut').innerHTML = `<table>
+      <tr><th>المؤشر</th><th>القيمة</th></tr>
+      <tr><td>عدد الطبقات</td><td>${d.layer_count}</td></tr>
+      <tr><td>عدد النصوص</td><td>${d.text_count}</td></tr>
+      <tr><td>إجمالي أطوال الخطوط</td><td>${d.total_line_length.toLocaleString()}</td></tr>
+      <tr><td>مساحة المضلّعات المغلقة</td><td>${d.closed_polyline_area.toLocaleString()}</td></tr>
+      <tr><td>الكيانات</td><td>${JSON.stringify(d.entity_counts)}</td></tr>
+    </table>`;
+  }catch(err){ $('#dxfOut').innerHTML='❌ '+err.message; } finally{ loading(e.target,false); } };
 
 // المجلس
 async function loadProviders(){

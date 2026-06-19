@@ -119,12 +119,17 @@ def import_boq(
 ) -> Tender:
     """يقرأ ملف BOQ (Excel/CSV) ويُرجع مناقصة جاهزة للتحليل."""
     path = Path(path)
-    if path.suffix.lower() in {".xlsx", ".xlsm"}:
+    suffix = path.suffix.lower()
+    if suffix in {".xlsx", ".xlsm"}:
         rows = _rows_from_excel(path)
-    elif path.suffix.lower() == ".csv":
+    elif suffix == ".csv":
         rows = _rows_from_csv(path)
+    elif suffix == ".pdf":
+        from .pdf_import import extract_pdf_rows
+
+        rows = extract_pdf_rows(path)
     else:
-        raise ValueError(f"صيغة غير مدعومة: {path.suffix} (المدعوم: .xlsx, .csv)")
+        raise ValueError(f"صيغة غير مدعومة: {path.suffix} (المدعوم: .xlsx, .csv, .pdf)")
 
     if not rows:
         raise ValueError("الملف فارغ")

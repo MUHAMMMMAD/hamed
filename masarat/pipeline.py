@@ -9,6 +9,7 @@ from typing import Optional
 
 from .agents import AgentContext, build_team
 from .database import Database, db as default_db
+from .engines import LearningEngine
 from .llm.council import Council
 from .models import Tender, TenderAnalysis
 
@@ -25,6 +26,9 @@ def analyze_tender(
         council=council or Council(),
     )
 
+    # التعلّم من المشاريع السابقة أولاً (يعاير الاحتياطي ويوصي بالهامش)
+    ctx.learning = LearningEngine(ctx.db).analyze(tender)
+
     for agent in build_team():
         agent.run(ctx)
 
@@ -34,6 +38,7 @@ def analyze_tender(
         risk=ctx.risk,
         decision=ctx.decision,
         cashflow=ctx.cashflow,
+        learning=ctx.learning,
         agent_reports=ctx.reports,
         council_insights=ctx.council_insights,
     )

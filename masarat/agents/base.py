@@ -14,6 +14,7 @@ from ..models import (
     BidDecision,
     CashFlow,
     CostBreakdown,
+    LearningInsight,
     RiskAssessment,
     Tender,
 )
@@ -30,6 +31,7 @@ class AgentContext:
     risk: Optional[RiskAssessment] = None
     decision: Optional[BidDecision] = None
     cashflow: Optional[CashFlow] = None
+    learning: Optional[LearningInsight] = None
 
     reports: dict = field(default_factory=dict)
     council_insights: dict = field(default_factory=dict)

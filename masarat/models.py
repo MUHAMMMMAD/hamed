@@ -222,6 +222,20 @@ class CashFlow(BaseModel):
     final_cumulative: float = 0.0
 
 
+class LearningInsight(BaseModel):
+    """مخرجات محرك التعلّم من المشاريع السابقة (Cost Intelligence)."""
+    sample_size: int = 0
+    avg_deviation_pct: float = 0.0        # متوسط الانحراف التاريخي
+    std_deviation_pct: float = 0.0        # الانحراف المعياري
+    predicted_deviation_pct: float = 0.0  # الانحراف المتوقع لهذا المشروع
+    recommended_contingency_pct: float = 15.0  # احتياطي موصى به
+    recommended_margin_pct: float = 15.0  # هامش ربح موصى به
+    calibrated_cost_factor: float = 1.0   # معامل معايرة التكلفة المباشرة
+    confidence: float = 0.0               # ثقة التوصية %
+    method: str = "historical_mean"       # regression | historical_mean
+    notes: str = ""
+
+
 # ===========================================================================
 # نتيجة موحدة لكامل التحليل
 # ===========================================================================
@@ -231,5 +245,6 @@ class TenderAnalysis(BaseModel):
     risk: RiskAssessment
     decision: BidDecision
     cashflow: CashFlow
+    learning: Optional[LearningInsight] = None            # رؤى التعلّم الآلي
     agent_reports: dict = Field(default_factory=dict)   # تقرير كل وكيل
     council_insights: dict = Field(default_factory=dict)  # رؤى المجلس

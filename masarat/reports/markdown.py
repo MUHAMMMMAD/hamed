@@ -95,8 +95,26 @@ def build_report(a: TenderAnalysis) -> str:
         )
     L.append("")
 
+    # التعلّم الآلي من المشاريع السابقة
+    if a.learning and a.learning.sample_size:
+        ln = a.learning
+        L.append("## 5) التعلّم الآلي من المشاريع السابقة")
+        L.append(
+            f"- **عدد المشاريع المتعلَّم منها:** {ln.sample_size}  |  "
+            f"**الطريقة:** {ln.method}  |  **الثقة:** {ln.confidence}%"
+        )
+        L.append(
+            f"- **متوسط الانحراف التاريخي:** {ln.avg_deviation_pct}% "
+            f"(± {ln.std_deviation_pct}%)"
+        )
+        L.append(f"- **الانحراف المتوقّع لهذا المشروع:** {ln.predicted_deviation_pct}%")
+        L.append(f"- **الاحتياطي الموصى به (مُطبّق):** {ln.recommended_contingency_pct}%")
+        L.append(f"- **هامش الربح الموصى به:** {ln.recommended_margin_pct}%")
+        L.append(f"- **معامل معايرة التكلفة:** ×{ln.calibrated_cost_factor}")
+        L.append("")
+
     # رؤى مجلس الذكاء الاصطناعي
-    L.append("## 5) رؤى مجلس الذكاء الاصطناعي (Multi-LLM Council)")
+    L.append("## 6) رؤى مجلس الذكاء الاصطناعي (Multi-LLM Council)")
     if a.council_insights:
         for key, ins in a.council_insights.items():
             mode = "تجريبي" if ins.get("offline") else "حقيقي"

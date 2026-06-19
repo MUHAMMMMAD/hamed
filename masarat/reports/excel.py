@@ -132,7 +132,28 @@ def export_excel(a: TenderAnalysis, path: str | Path | None = None) -> Path:
         ws.append([m.month, m.cost, m.revenue, m.net, m.cumulative])
     _autosize(ws)
 
-    # ----- 6) مجلس النماذج -----
+    # ----- التعلّم الآلي -----
+    if a.learning and a.learning.sample_size:
+        ln = a.learning
+        ws = wb.create_sheet("التعلّم الآلي")
+        ws.sheet_view.rightToLeft = True
+        ws.append(["المؤشر", "القيمة"])
+        _style_header(ws, 1, 2)
+        for label, value in [
+            ("عدد المشاريع المتعلَّم منها", ln.sample_size),
+            ("الطريقة", ln.method),
+            ("الثقة %", ln.confidence),
+            ("متوسط الانحراف التاريخي %", ln.avg_deviation_pct),
+            ("الانحراف المعياري %", ln.std_deviation_pct),
+            ("الانحراف المتوقّع %", ln.predicted_deviation_pct),
+            ("الاحتياطي الموصى به %", ln.recommended_contingency_pct),
+            ("هامش الربح الموصى به %", ln.recommended_margin_pct),
+            ("معامل معايرة التكلفة", ln.calibrated_cost_factor),
+        ]:
+            ws.append([label, value])
+        _autosize(ws)
+
+    # ----- مجلس النماذج -----
     ws = wb.create_sheet("مجلس النماذج")
     ws.sheet_view.rightToLeft = True
     ws.append(["النموذج", "الدور", "الوضع", "الثقة %"])

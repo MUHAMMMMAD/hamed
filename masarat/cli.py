@@ -17,6 +17,7 @@ import sys
 from . import __app_name__, __version__, config
 from .database import db, load_sample_tender, load_tender_from_file
 from .io import (
+    extract_dxf_info,
     generate_boq_template,
     generate_prices_template,
     import_boq,
@@ -124,6 +125,21 @@ def cmd_import_prices(args) -> None:
             print(f"   - {e}")
 
 
+def cmd_read_dxf(args) -> None:
+    _print_header()
+    info = extract_dxf_info(args.file)
+    print(f"\n▶ تحليل الرسم: {args.file}\n")
+    print(f"الطبقات ({info['layer_count']}): {', '.join(info['layers'][:15])}")
+    print(f"عدّ الكيانات: {info['entity_counts']}")
+    print(f"عدد النصوص: {info['text_count']}")
+    print(f"إجمالي أطوال الخطوط: {info['total_line_length']:,.2f}")
+    print(f"مساحة المضلّعات المغلقة: {info['closed_polyline_area']:,.2f}")
+    if info["texts_sample"]:
+        print("\nعيّنة من النصوص:")
+        for t in info["texts_sample"][:15]:
+            print(f"   • {t}")
+
+
 def cmd_serve(args) -> None:
     import uvicorn
 
@@ -157,8 +173,8 @@ def main(argv: list[str] | None = None) -> int:
     p_an = sub.add_parser("analyze", help="تحليل مناقصة من ملف JSON")
     p_an.add_argument("file", help="مسار ملف المناقصة (BOQ JSON)")
 
-    p_ib = sub.add_parser("import-boq", help="استيراد وتحليل BOQ من Excel/CSV")
-    p_ib.add_argument("file", help="مسار ملف BOQ (.xlsx أو .csv)")
+    p_ib = sub.add_parser("import-boq", help="استيراد وتحليل BOQ من Excel/CSV/PDF")
+    p_ib.add_argument("file", help="مسار ملف BOQ (.xlsx أو .csv أو .pdf)")
     p_ib.add_argument("--name", default=None, help="اسم المشروع")
     p_ib.add_argument("--client", default="غير محدد", help="العميل")
     p_ib.add_argument("--type", default="private",
@@ -170,6 +186,9 @@ def main(argv: list[str] | None = None) -> int:
 
     p_ip = sub.add_parser("import-prices", help="استيراد الأسعار الفعلية من قالب Excel")
     p_ip.add_argument("file", help="مسار قالب الأسعار (.xlsx)")
+
+    p_dx = sub.add_parser("read-dxf", help="تحليل رسم هندسي بصيغة DXF")
+    p_dx.add_argument("file", help="مسار ملف الرسم (.dxf)")
 
     p_sv = sub.add_parser("serve", help="تشغيل لوحة الويب + الـ API")
     p_sv.add_argument("--host", default="127.0.0.1")
@@ -188,6 +207,7 @@ def main(argv: list[str] | None = None) -> int:
         "import-boq": cmd_import_boq,
         "template": cmd_template,
         "import-prices": cmd_import_prices,
+        "read-dxf": cmd_read_dxf,
         "serve": cmd_serve,
         "council": cmd_council,
     }

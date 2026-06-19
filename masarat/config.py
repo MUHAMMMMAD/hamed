@@ -19,8 +19,22 @@ except Exception:  # pragma: no cover - python-dotenv قد لا يكون مثب�
 # المسارات
 # ---------------------------------------------------------------------------
 ROOT_DIR = Path(__file__).resolve().parents[1]
-DATA_DIR = ROOT_DIR / "data" / "seed"
-OUTPUT_DIR = ROOT_DIR / "output"
+PKG_DIR = Path(__file__).resolve().parent
+
+
+def _resolve_data_dir() -> Path:
+    """يحدّد مجلد البيانات سواء عند التشغيل من المصدر أو كحزمة مثبّتة."""
+    env = os.getenv("MASARAT_DATA_DIR")
+    if env:
+        return Path(env)
+    for cand in (ROOT_DIR / "data" / "seed", PKG_DIR / "data" / "seed"):
+        if cand.exists():
+            return cand
+    return ROOT_DIR / "data" / "seed"
+
+
+DATA_DIR = _resolve_data_dir()
+OUTPUT_DIR = Path(os.getenv("MASARAT_OUTPUT_DIR", str(ROOT_DIR / "output")))
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 

@@ -142,8 +142,12 @@ class EstimationAgent(Agent):
 
     def run(self, ctx: AgentContext) -> dict:
         risk_factor = ctx.risk.risk_factor_pct if ctx.risk else 0.0
+        cfg = PricingConfig()
+        if ctx.learning and ctx.learning.sample_size:
+            # احتياطي مُعاير من المشاريع السابقة بدل الافتراضي الثابت
+            cfg.contingency_pct = ctx.learning.recommended_contingency_pct / 100.0
         ctx.cost = PricingEngine(ctx.db).price_tender(
-            ctx.tender, PricingConfig(), risk_factor_pct=risk_factor
+            ctx.tender, cfg, risk_factor_pct=risk_factor
         )
         insight = self._consult(
             ctx,
@@ -154,6 +158,7 @@ class EstimationAgent(Agent):
         report = {
             "title": self.title,
             "cost": ctx.cost.model_dump(),
+            "contingency_pct": round(cfg.contingency_pct * 100, 2),
             "ai_insight": insight,
         }
         ctx.reports[self.name] = report
@@ -266,6 +271,13 @@ class CEOAgent(Agent):
             f"مستوى المخاطر: {r.overall_level.value}.\n"
             f"أقصى تمويل مطلوب: {ctx.cashflow.peak_funding_required:,.0f} ريال."
         )
+        if ctx.learning and ctx.learning.sample_size:
+            summary += (
+                f"\nالتعلّم الآلي ({ctx.learning.sample_size} مشروعاً، ثقة "
+                f"{ctx.learning.confidence}%): انحراف متوقّع "
+                f"{ctx.learning.predicted_deviation_pct}% واحتياطي مُعاير "
+                f"{ctx.learning.recommended_contingency_pct}%."
+            )
         report = {
             "title": self.title,
             "final_decision": d.decision.value,

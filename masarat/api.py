@@ -19,6 +19,7 @@ from pydantic import BaseModel
 from . import __app_name__, __version__, config
 from .database import db, load_sample_tender
 from .io import (
+    extract_dxf_info,
     generate_boq_template,
     generate_prices_template,
     import_boq,
@@ -183,6 +184,18 @@ async def ui_import_prices(file: UploadFile = File(...)) -> dict:
     tmp = _save_upload(file, ".xlsx")
     try:
         return import_prices(tmp)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    finally:
+        tmp.unlink(missing_ok=True)
+
+
+@app.post("/ui/read-dxf")
+async def ui_read_dxf(file: UploadFile = File(...)) -> dict:
+    """قراءة رسم هندسي DXF واستخراج الطبقات والنصوص والمساحات."""
+    tmp = _save_upload(file, ".dxf")
+    try:
+        return extract_dxf_info(tmp)
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     finally:
