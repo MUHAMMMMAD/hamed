@@ -1,0 +1,8 @@
+[
+  {"id": "SUP-RAJHI",   "name": "مصنع الراجحي للحديد",        "materials": ["MAT-STEEL", "MAT-TIEWIRE"], "lead_time_days": 10, "price_stability": 4.0, "rating": 4.5, "last_updated": "2026-06-01"},
+  {"id": "SUP-YAMAMA",  "name": "أسمنت اليمامة",             "materials": ["MAT-CEMENT"],               "lead_time_days": 3,  "price_stability": 5.0, "rating": 4.5, "last_updated": "2026-06-01"},
+  {"id": "SUP-READYMIX","name": "شركة الخرسانة الجاهزة",      "materials": ["MAT-CONC30", "MAT-CONC25"], "lead_time_days": 1,  "price_stability": 4.0, "rating": 4.0, "last_updated": "2026-06-01"},
+  {"id": "SUP-BLOCK",   "name": "مصنع البلوك الوطني",         "materials": ["MAT-BLOCK20"],              "lead_time_days": 5,  "price_stability": 5.0, "rating": 4.0, "last_updated": "2026-06-01"},
+  {"id": "SUP-FINISH",  "name": "معرض التشطيبات الحديثة",      "materials": ["MAT-CERAMIC", "MAT-PAINT-INT", "MAT-WP"], "lead_time_days": 14, "price_stability": 3.0, "rating": 3.5, "last_updated": "2026-06-01"},
+  {"id": "SUP-ALUM",    "name": "مصنع الألمنيوم السعودي",      "materials": ["MAT-WINDOW", "MAT-DOOR"],   "lead_time_days": 21, "price_stability": 3.5, "rating": 4.0, "last_updated": "2026-06-01"}
+]

@@ -1,0 +1,16 @@
+[
+  {"id": "MAT-STEEL",    "name_ar": "حديد تسليح",            "name_en": "Reinforcement Steel", "unit": "طن",   "unit_price": 2950, "category": "structural", "trend_pct": 1.5,  "last_updated": "2026-06-01"},
+  {"id": "MAT-CEMENT",   "name_ar": "أسمنت بورتلاندي",        "name_en": "Portland Cement",     "unit": "كيس",  "unit_price": 15,   "category": "binder",     "trend_pct": 0.0,  "last_updated": "2026-06-01"},
+  {"id": "MAT-CONC30",   "name_ar": "خرسانة جاهزة C30",       "name_en": "Ready-mix C30",       "unit": "م3",   "unit_price": 230,  "category": "concrete",   "trend_pct": 0.8,  "last_updated": "2026-06-01"},
+  {"id": "MAT-CONC25",   "name_ar": "خرسانة جاهزة C25",       "name_en": "Ready-mix C25",       "unit": "م3",   "unit_price": 210,  "category": "concrete",   "trend_pct": 0.8,  "last_updated": "2026-06-01"},
+  {"id": "MAT-BLOCK20",  "name_ar": "بلوك أسمنتي 20سم",       "name_en": "Concrete Block 20cm", "unit": "عدد",  "unit_price": 4.0,  "category": "masonry",    "trend_pct": 0.0,  "last_updated": "2026-06-01"},
+  {"id": "MAT-SAND",     "name_ar": "رمل",                    "name_en": "Sand",                "unit": "م3",   "unit_price": 35,   "category": "aggregate",  "trend_pct": 0.0,  "last_updated": "2026-06-01"},
+  {"id": "MAT-AGG",      "name_ar": "بحص / حصى",              "name_en": "Aggregate",           "unit": "م3",   "unit_price": 50,   "category": "aggregate",  "trend_pct": 0.0,  "last_updated": "2026-06-01"},
+  {"id": "MAT-PLYWOOD",  "name_ar": "خشب طبلية (شدة)",        "name_en": "Plywood Formwork",    "unit": "م2",   "unit_price": 55,   "category": "formwork",   "trend_pct": 2.0,  "last_updated": "2026-06-01"},
+  {"id": "MAT-TIEWIRE",  "name_ar": "سلك ربط",                "name_en": "Tie Wire",            "unit": "طن",   "unit_price": 4200, "category": "structural", "trend_pct": 1.0,  "last_updated": "2026-06-01"},
+  {"id": "MAT-PAINT-INT","name_ar": "دهان داخلي",             "name_en": "Interior Paint",      "unit": "م2",   "unit_price": 12,   "category": "finishes",   "trend_pct": 0.5,  "last_updated": "2026-06-01"},
+  {"id": "MAT-CERAMIC",  "name_ar": "سيراميك أرضيات",         "name_en": "Floor Ceramic",       "unit": "م2",   "unit_price": 45,   "category": "finishes",   "trend_pct": 0.5,  "last_updated": "2026-06-01"},
+  {"id": "MAT-WP",       "name_ar": "عزل مائي",               "name_en": "Waterproofing",       "unit": "م2",   "unit_price": 25,   "category": "finishes",   "trend_pct": 0.0,  "last_updated": "2026-06-01"},
+  {"id": "MAT-DOOR",     "name_ar": "باب خشبي",               "name_en": "Wooden Door",         "unit": "عدد",  "unit_price": 700,  "category": "joinery",    "trend_pct": 0.0,  "last_updated": "2026-06-01"},
+  {"id": "MAT-WINDOW",   "name_ar": "نافذة ألمنيوم + زجاج",   "name_en": "Aluminum Window",     "unit": "م2",   "unit_price": 350,  "category": "joinery",    "trend_pct": 1.0,  "last_updated": "2026-06-01"}
+]

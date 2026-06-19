@@ -1,0 +1,135 @@
+{
+  "id": "TND-2026-001",
+  "name": "إنشاء مبنى إداري - مسارات التشييد",
+  "client": "أمانة منطقة الرياض",
+  "type": "government",
+  "location": "الرياض",
+  "duration_months": 14,
+  "client_reputation": 4.5,
+  "competition_level": 4.0,
+  "advance_payment_pct": 0.10,
+  "retention_pct": 0.05,
+  "items": [
+    {
+      "id": "B-01", "description": "أعمال الحفر والردم", "unit": "م3", "quantity": 1200,
+      "resources": [
+        {"resource_type": "equipment", "resource_id": "EQP-EXCAVATOR", "coefficient": 0.005},
+        {"resource_type": "equipment", "resource_id": "EQP-TRUCK", "coefficient": 0.010},
+        {"resource_type": "labor", "resource_id": "LAB-WORKER", "coefficient": 0.020}
+      ]
+    },
+    {
+      "id": "B-02", "description": "خرسانة عادية (نظافة وقواعد)", "unit": "م3", "quantity": 150,
+      "resources": [
+        {"resource_type": "material", "resource_id": "MAT-CONC25", "coefficient": 1.0},
+        {"resource_type": "labor", "resource_id": "LAB-WORKER", "coefficient": 0.30},
+        {"resource_type": "labor", "resource_id": "LAB-MASON", "coefficient": 0.20},
+        {"resource_type": "equipment", "resource_id": "EQP-PUMP", "coefficient": 0.02}
+      ]
+    },
+    {
+      "id": "B-03", "description": "خرسانة مسلحة C30 (هياكل)", "unit": "م3", "quantity": 800,
+      "resources": [
+        {"resource_type": "material", "resource_id": "MAT-CONC30", "coefficient": 1.0},
+        {"resource_type": "labor", "resource_id": "LAB-WORKER", "coefficient": 0.30},
+        {"resource_type": "labor", "resource_id": "LAB-MASON", "coefficient": 0.25},
+        {"resource_type": "equipment", "resource_id": "EQP-PUMP", "coefficient": 0.03}
+      ]
+    },
+    {
+      "id": "B-04", "description": "حديد التسليح", "unit": "طن", "quantity": 95,
+      "resources": [
+        {"resource_type": "material", "resource_id": "MAT-STEEL", "coefficient": 1.05},
+        {"resource_type": "material", "resource_id": "MAT-TIEWIRE", "coefficient": 0.015},
+        {"resource_type": "labor", "resource_id": "LAB-STEELFIXER", "coefficient": 8.0},
+        {"resource_type": "labor", "resource_id": "LAB-WORKER", "coefficient": 4.0}
+      ]
+    },
+    {
+      "id": "B-05", "description": "شدة خشبية (نجارة مسلح)", "unit": "م2", "quantity": 4500,
+      "resources": [
+        {"resource_type": "material", "resource_id": "MAT-PLYWOOD", "coefficient": 0.30},
+        {"resource_type": "labor", "resource_id": "LAB-CARPENTER", "coefficient": 0.30},
+        {"resource_type": "labor", "resource_id": "LAB-WORKER", "coefficient": 0.15}
+      ]
+    },
+    {
+      "id": "B-06", "description": "أعمال البناء بالبلوك 20سم", "unit": "م2", "quantity": 3200,
+      "resources": [
+        {"resource_type": "material", "resource_id": "MAT-BLOCK20", "coefficient": 12.5},
+        {"resource_type": "material", "resource_id": "MAT-CEMENT", "coefficient": 0.20},
+        {"resource_type": "material", "resource_id": "MAT-SAND", "coefficient": 0.03},
+        {"resource_type": "labor", "resource_id": "LAB-MASON", "coefficient": 0.12},
+        {"resource_type": "labor", "resource_id": "LAB-WORKER", "coefficient": 0.12}
+      ]
+    },
+    {
+      "id": "B-07", "description": "أعمال اللياسة (داخلي وخارجي)", "unit": "م2", "quantity": 6400,
+      "resources": [
+        {"resource_type": "material", "resource_id": "MAT-CEMENT", "coefficient": 0.15},
+        {"resource_type": "material", "resource_id": "MAT-SAND", "coefficient": 0.025},
+        {"resource_type": "labor", "resource_id": "LAB-PLASTER", "coefficient": 0.15},
+        {"resource_type": "labor", "resource_id": "LAB-WORKER", "coefficient": 0.10}
+      ]
+    },
+    {
+      "id": "B-08", "description": "تبليط سيراميك أرضيات", "unit": "م2", "quantity": 2800,
+      "resources": [
+        {"resource_type": "material", "resource_id": "MAT-CERAMIC", "coefficient": 1.05},
+        {"resource_type": "material", "resource_id": "MAT-CEMENT", "coefficient": 0.10},
+        {"resource_type": "material", "resource_id": "MAT-SAND", "coefficient": 0.02},
+        {"resource_type": "labor", "resource_id": "LAB-TILER", "coefficient": 0.20},
+        {"resource_type": "labor", "resource_id": "LAB-WORKER", "coefficient": 0.15}
+      ]
+    },
+    {
+      "id": "B-09", "description": "أعمال الدهانات", "unit": "م2", "quantity": 6400,
+      "resources": [
+        {"resource_type": "material", "resource_id": "MAT-PAINT-INT", "coefficient": 1.10},
+        {"resource_type": "labor", "resource_id": "LAB-PAINTER", "coefficient": 0.12},
+        {"resource_type": "labor", "resource_id": "LAB-WORKER", "coefficient": 0.05}
+      ]
+    },
+    {
+      "id": "B-10", "description": "أعمال العزل المائي", "unit": "م2", "quantity": 1500,
+      "resources": [
+        {"resource_type": "material", "resource_id": "MAT-WP", "coefficient": 1.05},
+        {"resource_type": "labor", "resource_id": "LAB-PLASTER", "coefficient": 0.05},
+        {"resource_type": "labor", "resource_id": "LAB-WORKER", "coefficient": 0.15}
+      ]
+    },
+    {
+      "id": "B-11", "description": "أسوار حدودية", "unit": "م2", "quantity": 600,
+      "resources": [
+        {"resource_type": "subcontractor", "resource_id": "SUB-FENCE", "coefficient": 1.0},
+        {"resource_type": "labor", "resource_id": "LAB-FOREMAN", "coefficient": 0.01}
+      ]
+    },
+    {
+      "id": "B-12", "description": "نوافذ ألمنيوم", "unit": "م2", "quantity": 450,
+      "resources": [
+        {"resource_type": "material", "resource_id": "MAT-WINDOW", "coefficient": 1.0},
+        {"resource_type": "labor", "resource_id": "LAB-WORKER", "coefficient": 0.10}
+      ]
+    },
+    {
+      "id": "B-13", "description": "أبواب خشبية", "unit": "عدد", "quantity": 80,
+      "resources": [
+        {"resource_type": "material", "resource_id": "MAT-DOOR", "coefficient": 1.0},
+        {"resource_type": "labor", "resource_id": "LAB-CARPENTER", "coefficient": 0.50}
+      ]
+    },
+    {
+      "id": "B-14", "description": "أعمال الكهرباء (مقاول باطن)", "unit": "م2", "quantity": 3500,
+      "resources": [
+        {"resource_type": "subcontractor", "resource_id": "SUB-ELEC", "coefficient": 1.0}
+      ]
+    },
+    {
+      "id": "B-15", "description": "أعمال الميكانيكا والتكييف (مقاول باطن)", "unit": "م2", "quantity": 3500,
+      "resources": [
+        {"resource_type": "subcontractor", "resource_id": "SUB-MECH", "coefficient": 1.0}
+      ]
+    }
+  ]
+}

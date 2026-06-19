@@ -1,0 +1,13 @@
+[
+  {"id": "LAB-WORKER",     "name_ar": "عامل عادي",        "name_en": "General Worker",  "daily_rate": 90},
+  {"id": "LAB-STEELFIXER", "name_ar": "حداد مسلح",         "name_en": "Steel Fixer",     "daily_rate": 180},
+  {"id": "LAB-CARPENTER",  "name_ar": "نجار مسلح",         "name_en": "Carpenter",       "daily_rate": 180},
+  {"id": "LAB-MASON",      "name_ar": "بنّاء",            "name_en": "Mason",           "daily_rate": 160},
+  {"id": "LAB-PLASTER",    "name_ar": "لياس",             "name_en": "Plasterer",       "daily_rate": 150},
+  {"id": "LAB-PAINTER",    "name_ar": "دهّان",            "name_en": "Painter",         "daily_rate": 140},
+  {"id": "LAB-TILER",      "name_ar": "مبلّط",            "name_en": "Tiler",           "daily_rate": 170},
+  {"id": "LAB-ELEC",       "name_ar": "كهربائي",          "name_en": "Electrician",     "daily_rate": 170},
+  {"id": "LAB-PLUMB",      "name_ar": "سبّاك",            "name_en": "Plumber",         "daily_rate": 170},
+  {"id": "LAB-FOREMAN",    "name_ar": "مراقب / مشرف",      "name_en": "Foreman",         "daily_rate": 250},
+  {"id": "LAB-ENG",        "name_ar": "مهندس موقع",        "name_en": "Site Engineer",   "daily_rate": 500}
+]

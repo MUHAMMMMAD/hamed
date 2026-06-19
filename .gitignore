@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Secrets - مفاتيح الـ API لا تُرفع أبداً
+.env
+*.key
+
+# Outputs - المخرجات المُولّدة
+output/
+*.xlsx
+!data/**/*.xlsx
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+*.log

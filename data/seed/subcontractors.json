@@ -1,0 +1,8 @@
+[
+  {"id": "SUB-FENCE",     "name": "مؤسسة الأسوار المتقدمة",     "activity": "أسوار",      "unit_price": 180, "unit": "م2", "quality": 4.0, "timeliness": 4.0, "risk": "low"},
+  {"id": "SUB-FINISH",    "name": "شركة التشطيبات الراقية",      "activity": "تشطيبات",    "unit_price": 350, "unit": "م2", "quality": 4.5, "timeliness": 3.5, "risk": "medium"},
+  {"id": "SUB-ELEC",      "name": "مقاول الكهرباء المعتمد",      "activity": "كهرباء",     "unit_price": 120, "unit": "م2", "quality": 4.0, "timeliness": 4.0, "risk": "low"},
+  {"id": "SUB-MECH",      "name": "شركة الميكانيكا والتكييف",    "activity": "ميكانيكا",   "unit_price": 200, "unit": "م2", "quality": 4.0, "timeliness": 3.0, "risk": "medium"},
+  {"id": "SUB-ASPHALT",   "name": "مقاول السفلتة",              "activity": "سفلتة",      "unit_price": 45,  "unit": "م2", "quality": 3.5, "timeliness": 4.0, "risk": "low"},
+  {"id": "SUB-LANDSCAPE", "name": "شركة تنسيق الحدائق",         "activity": "تنسيق حدائق","unit_price": 90,  "unit": "م2", "quality": 3.5, "timeliness": 3.5, "risk": "medium"}
+]

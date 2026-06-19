@@ -1,0 +1,9 @@
+[
+  {"id": "EQP-EXCAVATOR", "name_ar": "حفّار",          "name_en": "Excavator",     "unit": "يوم",  "rate": 1200},
+  {"id": "EQP-LOADER",    "name_ar": "شيول",           "name_en": "Wheel Loader",  "unit": "يوم",  "rate": 900},
+  {"id": "EQP-BOBCAT",    "name_ar": "بوبكات",         "name_en": "Bobcat",        "unit": "يوم",  "rate": 550},
+  {"id": "EQP-CRANE",     "name_ar": "رافعة متنقلة",    "name_en": "Mobile Crane",  "unit": "ساعة", "rate": 250},
+  {"id": "EQP-PUMP",      "name_ar": "مضخة خرسانة",     "name_en": "Concrete Pump", "unit": "يوم",  "rate": 1500},
+  {"id": "EQP-TRUCK",     "name_ar": "قلاب نقل",        "name_en": "Dump Truck",    "unit": "يوم",  "rate": 700},
+  {"id": "EQP-WATERTANK", "name_ar": "وايت ماء",        "name_en": "Water Tanker",  "unit": "يوم",  "rate": 400}
+]
