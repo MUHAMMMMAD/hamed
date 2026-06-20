@@ -1,0 +1,17 @@
+# Render Blueprint — نشر MASARAT AI بنقرات من مستودع GitHub (بلا إدارة خادم)
+# الاستخدام: من https://render.com → New → Blueprint → اربط هذا المستودع.
+services:
+  - type: web
+    name: masarat-ai
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free                 # رقّها إلى starter للتشغيل الدائم بلا سكون
+    region: frankfurt          # الأقرب للسعودية
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: MASARAT_OFFLINE
+        value: "false"
+      # أضف مفاتيح النماذج هنا (اختياري) من لوحة Render -> Environment
+      # - key: OPENAI_API_KEY
+      #   sync: false

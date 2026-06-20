@@ -209,14 +209,16 @@ docker run -p 8000:8000 masarat-ai      # ثم افتح http://localhost:8000/
 make install   |   make demo   |   make serve   |   make test   |   make docker
 ```
 
-## 🌐 النشر على خادم الشركة (موقع برابط دائم)
+## 🌐 النشر كموقع برابط دائم
 
-> **ملاحظة:** النظام تطبيق Python (FastAPI) يحتاج خادماً يشغّله — الاستضافة
-> المشتركة (cPanel) تدعمه فقط عبر "Setup Python App"؛ وإلا فالأنسب VPS صغير
-> مع توجيه نطاق فرعي إليه. كل الحالات (Docker · systemd · cPanel) مشروحة في
+> النظام تطبيق Python (FastAPI) يحتاج خادماً يشغّله (لا يعمل على استضافة HTML
+> مشتركة بلا دعم Python). كل المسارات مشروحة في
 > **[`deploy/DEPLOY.md`](deploy/DEPLOY.md)**.
 
-لتشغيل النظام كموقع يصل إليه فريقك من أي جهاز عبر خادم الشركة أو VPS:
+**الأسهل — Render (بلا إدارة خادم):** اربط المستودع على <https://render.com>
+(يكتشف `render.yaml`)، ثم أضف نطاقك المخصّص — تحصل على رابط HTTPS تلقائياً.
+
+**أو على خادم VPS (Docker):**
 
 ```bash
 # على خادم Ubuntu (بعد تثبيت Docker)
