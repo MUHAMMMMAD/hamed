@@ -41,7 +41,7 @@ SHELL = r"""<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MASARAT AI — منصة تسعير المناقصات (نسخة المتصفح)</title>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>/*__XLSX_LIB__*/</script>
 <style>
   :root{ --navy:#1F4E78; --navy2:#2c6aa0; --bg:#f4f6fa; --card:#fff;
          --ok:#1e7d34; --warn:#b8860b; --bad:#b3261e; --line:#e2e8f0; }
@@ -106,7 +106,7 @@ SHELL = r"""<!DOCTYPE html>
         <div><label>المدة (شهر)</label><input id="pDur" type="number" value="12" style="width:90px"></div>
       </div>
       <div class="row" style="margin-top:12px">
-        <div><label>ملف BOQ</label><input id="boqFile" type="file" accept=".xlsx,.csv"></div>
+        <div><label>ملف BOQ</label><input id="boqFile" type="file" accept=".xlsx,.xls,.xlsm,.csv"></div>
         <button class="btn" id="btnUpload">⬆ رفع وتحليل</button>
       </div>
     </div>
@@ -230,7 +230,7 @@ $("#btnUpload").onclick = () => {
       let rows;
       if (isCsv) rows = MasaratBOQ.parseCSV(ev.target.result);
       else {
-        if (typeof XLSX === "undefined") { alert("قراءة Excel تحتاج اتصالاً بالإنترنت (لتحميل مكتبة القراءة). استخدم CSV بدلاً منها."); return; }
+        if (typeof XLSX === "undefined") { alert("تعذّر تحميل مكتبة قراءة Excel. جرّب حفظ الملف بصيغة CSV ثم ارفعه."); return; }
         const wb = XLSX.read(new Uint8Array(ev.target.result), { type: "array" });
         rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: null });
       }
@@ -288,15 +288,19 @@ def main():
     data_js = build_data_js()
     engine_js = (TOOLS / "engine.js").read_text(encoding="utf-8")
     boq_js = (TOOLS / "boq.js").read_text(encoding="utf-8")
+    # مكتبة قراءة Excel مُضمّنة داخل الملف (تعمل بلا إنترنت)
+    xlsx_lib = (TOOLS / "vendor" / "xlsx.full.min.js").read_text(encoding="utf-8")
+    xlsx_lib = xlsx_lib.replace("</script>", "<\\/script>")
     html = (
         SHELL.replace("/*__DATA__*/", data_js)
         .replace("/*__ENGINE__*/", engine_js)
         .replace("/*__BOQ__*/", boq_js)
         .replace("/*__UI__*/", UI)
+        .replace("/*__XLSX_LIB__*/", xlsx_lib)
     )
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(html, encoding="utf-8")
-    print(f"✓ بُنيت النسخة الثابتة: {OUT}  ({len(html):,} حرف)")
+    print(f"✓ بُنيت النسخة الثابتة: {OUT}  ({len(html):,} حرف، شاملة مكتبة Excel)")
 
 
 if __name__ == "__main__":
