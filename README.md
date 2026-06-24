@@ -211,14 +211,16 @@ make install   |   make demo   |   make serve   |   make test   |   make docker
 
 ## 🌐 النشر كموقع برابط دائم
 
-> النظام تطبيق Python (FastAPI) يحتاج خادماً يشغّله (لا يعمل على استضافة HTML
-> مشتركة بلا دعم Python). كل المسارات مشروحة في
-> **[`deploy/DEPLOY.md`](deploy/DEPLOY.md)**.
+يأتي النظام بنسختين (التفاصيل في **[`deploy/DEPLOY.md`](deploy/DEPLOY.md)**):
 
-**الأسهل — Render (بلا إدارة خادم):** اربط المستودع على <https://render.com>
-(يكتشف `render.yaml`)، ثم أضف نطاقك المخصّص — تحصل على رابط HTTPS تلقائياً.
+**① النسخة الثابتة (`static/index.html`) — تعمل على cPanel/أي استضافة بلا Python.**
+محرّك التسعير/المخاطر/القرار/التدفقات/التعلّم يعمل **داخل المتصفح**. ارفع الملف
+الواحد إلى مجلد نطاقك الفرعي وانتهى. أعد بناءه بعد تعديل الأسعار عبر:
+`python tools/build_static.py`.
 
-**أو على خادم VPS (Docker):**
+**② نسخة الخادم (Python/FastAPI) — النظام الكامل** (يضيف مجلس نماذج الذكاء
+الحيّ و API ومشاركة البيانات). الأسهل عبر **Render** (اربط المستودع — يكتشف
+`render.yaml`)، أو على **خادم VPS (Docker):**
 
 ```bash
 # على خادم Ubuntu (بعد تثبيت Docker)

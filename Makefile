@@ -12,8 +12,12 @@ demo:           ## تشغيل التحليل الكامل على المشروع 
 serve:          ## تشغيل لوحة الويب + الـ API
 	python -m masarat serve
 
-test:           ## تشغيل الاختبارات
+test:           ## تشغيل الاختبارات (Python + JS)
 	pytest
+	node tools/test_engine.cjs
+
+static:         ## بناء النسخة الثابتة (static/index.html) للرفع على cPanel
+	python tools/build_static.py
 
 docker:         ## بناء صورة Docker
 	docker build -t masarat-ai .

@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MASARAT AI — منصة تسعير المناقصات (نسخة المتصفح)</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+  :root{ --navy:#1F4E78; --navy2:#2c6aa0; --bg:#f4f6fa; --card:#fff;
+         --ok:#1e7d34; --warn:#b8860b; --bad:#b3261e; --line:#e2e8f0; }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Segoe UI",Tahoma,sans-serif;background:var(--bg);color:#1a2433}
+  header{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;padding:22px 28px}
+  header h1{margin:0;font-size:22px} header p{margin:6px 0 0;opacity:.9;font-size:13px}
+  .wrap{max-width:1100px;margin:0 auto;padding:20px}
+  nav{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}
+  nav button{background:#fff;border:1px solid var(--line);padding:10px 16px;border-radius:10px;
+             cursor:pointer;font-size:14px;font-weight:600;color:var(--navy)}
+  nav button.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:18px;
+        box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  .card h2{margin:0 0 14px;font-size:17px;color:var(--navy)}
+  .row{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
+  label{display:block;font-size:13px;margin-bottom:4px;color:#475569;font-weight:600}
+  input,select{padding:9px 11px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-family:inherit}
+  .btn{background:var(--navy);color:#fff;border:none;padding:11px 20px;border-radius:9px;cursor:pointer;font-size:14px;font-weight:700}
+  .btn:hover{background:var(--navy2)} .btn.alt{background:#eef2f7;color:var(--navy)}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:right}
+  th{background:#eef2f7;color:var(--navy)} tr:nth-child(even) td{background:#fafbfd}
+  td[contenteditable]{background:#fffdf3;cursor:text}
+  .verdict{font-size:20px;font-weight:800;padding:14px;border-radius:10px;text-align:center;margin-bottom:14px}
+  .v-BID{background:#d8f3df;color:var(--ok)} .v-NO_BID{background:#f9d9d6;color:var(--bad)}
+  .v-BID_WITH_CONDITIONS{background:#fdecc8;color:var(--warn)}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:14px}
+  .kpi{background:#f7f9fc;border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center}
+  .kpi .v{font-size:20px;font-weight:800;color:var(--navy)} .kpi .l{font-size:12px;color:#64748b;margin-top:3px}
+  .muted{color:#64748b;font-size:13px} .hidden{display:none}
+  .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;background:#d8f3df;color:var(--ok)}
+</style>
+</head>
+<body>
+<header>
+  <h1>🏗️ MASARAT AI — منصة ذكاء التكاليف</h1>
+  <p>نسخة المتصفح الثابتة · تعمل بلا خادم · شركة مسارات التشييد</p>
+</header>
+<div class="wrap">
+  <nav>
+    <button data-tab="analyze" class="active">📊 تحليل مشروع</button>
+    <button data-tab="prices">💲 الأسعار</button>
+    <button data-tab="about">ℹ️ حول</button>
+  </nav>
+
+  <section id="tab-analyze">
+    <div class="card">
+      <h2>تشغيل سريع <span class="badge">يعمل فوراً</span></h2>
+      <p class="muted">جرّب النظام على مشروع نموذجي (مبنى إداري) دون رفع ملف.</p>
+      <button class="btn" id="btnDemo">▶ تشغيل المشروع النموذجي</button>
+    </div>
+    <div class="card">
+      <h2>رفع جدول كميات (BOQ)</h2>
+      <p class="muted">ارفع ملف Excel (.xlsx) أو CSV — يُكتشف الأعمدة تلقائياً، والحساب يتم داخل متصفحك.</p>
+      <div class="row">
+        <div><label>اسم المشروع</label><input id="pName" placeholder="مثال: مبنى تجاري"></div>
+        <div><label>العميل</label><input id="pClient" placeholder="اسم العميل"></div>
+        <div><label>النوع</label><select id="pType">
+          <option value="government">حكومي</option><option value="private" selected>خاص</option>
+          <option value="epc">EPC</option><option value="subcontract">مقاول باطن</option></select></div>
+        <div><label>المدة (شهر)</label><input id="pDur" type="number" value="12" style="width:90px"></div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <div><label>ملف BOQ</label><input id="boqFile" type="file" accept=".xlsx,.csv"></div>
+        <button class="btn" id="btnUpload">⬆ رفع وتحليل</button>
+      </div>
+    </div>
+    <div id="results" class="hidden"></div>
+  </section>
+
+  <section id="tab-prices" class="hidden">
+    <div class="card">
+      <h2>قواعد الأسعار <span class="muted">(عدّلها وتُحفظ في متصفحك)</span></h2>
+      <div class="row" style="margin-bottom:12px">
+        <button class="btn" id="btnSavePrices">💾 حفظ التعديلات</button>
+        <button class="btn alt" id="btnResetPrices">↺ استعادة الافتراضي</button>
+      </div>
+      <div id="pricesOut"></div>
+    </div>
+  </section>
+
+  <section id="tab-about" class="hidden">
+    <div class="card">
+      <h2>عن هذه النسخة</h2>
+      <p class="muted">نسخة المتصفح الثابتة من MASARAT AI: محرّك التسعير والمخاطر والقرار
+      والتدفقات والتعلّم — كلها تعمل داخل متصفحك بلا خادم، فترفعها على أي استضافة عادية.</p>
+      <p class="muted">ملاحظة: مجلس نماذج الذكاء الاصطناعي (ChatGPT/Claude/...) يحتاج خادماً
+      ومفاتيح، لذا يتوفّر في "نسخة الخادم" الكاملة. هذه النسخة تركّز على محرّك التسعير الكامل.</p>
+      <p class="muted">تنبيه واقعي: لا يضمن أي نظام دقة 99.99% قبل التنفيذ — الهدف 80–90% مبدئياً،
+      صعوداً إلى 95–98% بإدخال أسعارك ومشاريعك الفعلية في تبويب «الأسعار».</p>
+    </div>
+  </section>
+  <p class="muted" style="text-align:center;margin:24px 0">MASARAT AI · Static Edition · شركة مسارات التشييد</p>
+</div>
+
+<script>
+const DATA = {"db": {"materials": {"MAT-STEEL": {"id": "MAT-STEEL", "name_ar": "حديد تسليح", "name_en": "Reinforcement Steel", "unit": "طن", "unit_price": 2950, "category": "structural", "trend_pct": 1.5, "last_updated": "2026-06-01"}, "MAT-CEMENT": {"id": "MAT-CEMENT", "name_ar": "أسمنت بورتلاندي", "name_en": "Portland Cement", "unit": "كيس", "unit_price": 15, "category": "binder", "trend_pct": 0.0, "last_updated": "2026-06-01"}, "MAT-CONC30": {"id": "MAT-CONC30", "name_ar": "خرسانة جاهزة C30", "name_en": "Ready-mix C30", "unit": "م3", "unit_price": 230, "category": "concrete", "trend_pct": 0.8, "last_updated": "2026-06-01"}, "MAT-CONC25": {"id": "MAT-CONC25", "name_ar": "خرسانة جاهزة C25", "name_en": "Ready-mix C25", "unit": "م3", "unit_price": 210, "category": "concrete", "trend_pct": 0.8, "last_updated": "2026-06-01"}, "MAT-BLOCK20": {"id": "MAT-BLOCK20", "name_ar": "بلوك أسمنتي 20سم", "name_en": "Concrete Block 20cm", "unit": "عدد", "unit_price": 4.0, "category": "masonry", "trend_pct": 0.0, "last_updated": "2026-06-01"}, "MAT-SAND": {"id": "MAT-SAND", "name_ar": "رمل", "name_en": "Sand", "unit": "م3", "unit_price": 35, "category": "aggregate", "trend_pct": 0.0, "last_updated": "2026-06-01"}, "MAT-AGG": {"id": "MAT-AGG", "name_ar": "بحص / حصى", "name_en": "Aggregate", "unit": "م3", "unit_price": 50, "category": "aggregate", "trend_pct": 0.0, "last_updated": "2026-06-01"}, "MAT-PLYWOOD": {"id": "MAT-PLYWOOD", "name_ar": "خشب طبلية (شدة)", "name_en": "Plywood Formwork", "unit": "م2", "unit_price": 55, "category": "formwork", "trend_pct": 2.0, "last_updated": "2026-06-01"}, "MAT-TIEWIRE": {"id": "MAT-TIEWIRE", "name_ar": "سلك ربط", "name_en": "Tie Wire", "unit": "طن", "unit_price": 4200, "category": "structural", "trend_pct": 1.0, "last_updated": "2026-06-01"}, "MAT-PAINT-INT": {"id": "MAT-PAINT-INT", "name_ar": "دهان داخلي", "name_en": "Interior Paint", "unit": "م2", "unit_price": 12, "category": "finishes", "trend_pct": 0.5, "last_updated": "2026-06-01"}, "MAT-CERAMIC": {"id": "MAT-CERAMIC", "name_ar": "سيراميك أرضيات", "name_en": "Floor Ceramic", "unit": "م2", "unit_price": 45, "category": "finishes", "trend_pct": 0.5, "last_updated": "2026-06-01"}, "MAT-WP": {"id": "MAT-WP", "name_ar": "عزل مائي", "name_en": "Waterproofing", "unit": "م2", "unit_price": 25, "category": "finishes", "trend_pct": 0.0, "last_updated": "2026-06-01"}, "MAT-DOOR": {"id": "MAT-DOOR", "name_ar": "باب خشبي", "name_en": "Wooden Door", "unit": "عدد", "unit_price": 700, "category": "joinery", "trend_pct": 0.0, "last_updated": "2026-06-01"}, "MAT-WINDOW": {"id": "MAT-WINDOW", "name_ar": "نافذة ألمنيوم + زجاج", "name_en": "Aluminum Window", "unit": "م2", "unit_price": 350, "category": "joinery", "trend_pct": 1.0, "last_updated": "2026-06-01"}}, "labor": {"LAB-WORKER": {"id": "LAB-WORKER", "name_ar": "عامل عادي", "name_en": "General Worker", "daily_rate": 90}, "LAB-STEELFIXER": {"id": "LAB-STEELFIXER", "name_ar": "حداد مسلح", "name_en": "Steel Fixer", "daily_rate": 180}, "LAB-CARPENTER": {"id": "LAB-CARPENTER", "name_ar": "نجار مسلح", "name_en": "Carpenter", "daily_rate": 180}, "LAB-MASON": {"id": "LAB-MASON", "name_ar": "بنّاء", "name_en": "Mason", "daily_rate": 160}, "LAB-PLASTER": {"id": "LAB-PLASTER", "name_ar": "لياس", "name_en": "Plasterer", "daily_rate": 150}, "LAB-PAINTER": {"id": "LAB-PAINTER", "name_ar": "دهّان", "name_en": "Painter", "daily_rate": 140}, "LAB-TILER": {"id": "LAB-TILER", "name_ar": "مبلّط", "name_en": "Tiler", "daily_rate": 170}, "LAB-ELEC": {"id": "LAB-ELEC", "name_ar": "كهربائي", "name_en": "Electrician", "daily_rate": 170}, "LAB-PLUMB": {"id": "LAB-PLUMB", "name_ar": "سبّاك", "name_en": "Plumber", "daily_rate": 170}, "LAB-FOREMAN": {"id": "LAB-FOREMAN", "name_ar": "مراقب / مشرف", "name_en": "Foreman", "daily_rate": 250}, "LAB-ENG": {"id": "LAB-ENG", "name_ar": "مهندس موقع", "name_en": "Site Engineer", "daily_rate": 500}}, "equipment": {"EQP-EXCAVATOR": {"id": "EQP-EXCAVATOR", "name_ar": "حفّار", "name_en": "Excavator", "unit": "يوم", "rate": 1200}, "EQP-LOADER": {"id": "EQP-LOADER", "name_ar": "شيول", "name_en": "Wheel Loader", "unit": "يوم", "rate": 900}, "EQP-BOBCAT": {"id": "EQP-BOBCAT", "name_ar": "بوبكات", "name_en": "Bobcat", "unit": "يوم", "rate": 550}, "EQP-CRANE": {"id": "EQP-CRANE", "name_ar": "رافعة متنقلة", "name_en": "Mobile Crane", "unit": "ساعة", "rate": 250}, "EQP-PUMP": {"id": "EQP-PUMP", "name_ar": "مضخة خرسانة", "name_en": "Concrete Pump", "unit": "يوم", "rate": 1500}, "EQP-TRUCK": {"id": "EQP-TRUCK", "name_ar": "قلاب نقل", "name_en": "Dump Truck", "unit": "يوم", "rate": 700}, "EQP-WATERTANK": {"id": "EQP-WATERTANK", "name_ar": "وايت ماء", "name_en": "Water Tanker", "unit": "يوم", "rate": 400}}, "subcontractors": {"SUB-FENCE": {"id": "SUB-FENCE", "name": "مؤسسة الأسوار المتقدمة", "activity": "أسوار", "unit_price": 180, "unit": "م2", "quality": 4.0, "timeliness": 4.0, "risk": "low"}, "SUB-FINISH": {"id": "SUB-FINISH", "name": "شركة التشطيبات الراقية", "activity": "تشطيبات", "unit_price": 350, "unit": "م2", "quality": 4.5, "timeliness": 3.5, "risk": "medium"}, "SUB-ELEC": {"id": "SUB-ELEC", "name": "مقاول الكهرباء المعتمد", "activity": "كهرباء", "unit_price": 120, "unit": "م2", "quality": 4.0, "timeliness": 4.0, "risk": "low"}, "SUB-MECH": {"id": "SUB-MECH", "name": "شركة الميكانيكا والتكييف", "activity": "ميكانيكا", "unit_price": 200, "unit": "م2", "quality": 4.0, "timeliness": 3.0, "risk": "medium"}, "SUB-ASPHALT": {"id": "SUB-ASPHALT", "name": "مقاول السفلتة", "activity": "سفلتة", "unit_price": 45, "unit": "م2", "quality": 3.5, "timeliness": 4.0, "risk": "low"}, "SUB-LANDSCAPE": {"id": "SUB-LANDSCAPE", "name": "شركة تنسيق الحدائق", "activity": "تنسيق حدائق", "unit_price": 90, "unit": "م2", "quality": 3.5, "timeliness": 3.5, "risk": "medium"}}, "suppliers": {"SUP-RAJHI": {"id": "SUP-RAJHI", "name": "مصنع الراجحي للحديد", "materials": ["MAT-STEEL", "MAT-TIEWIRE"], "lead_time_days": 10, "price_stability": 4.0, "rating": 4.5, "last_updated": "2026-06-01"}, "SUP-YAMAMA": {"id": "SUP-YAMAMA", "name": "أسمنت اليمامة", "materials": ["MAT-CEMENT"], "lead_time_days": 3, "price_stability": 5.0, "rating": 4.5, "last_updated": "2026-06-01"}, "SUP-READYMIX": {"id": "SUP-READYMIX", "name": "شركة الخرسانة الجاهزة", "materials": ["MAT-CONC30", "MAT-CONC25"], "lead_time_days": 1, "price_stability": 4.0, "rating": 4.0, "last_updated": "2026-06-01"}, "SUP-BLOCK": {"id": "SUP-BLOCK", "name": "مصنع البلوك الوطني", "materials": ["MAT-BLOCK20"], "lead_time_days": 5, "price_stability": 5.0, "rating": 4.0, "last_updated": "2026-06-01"}, "SUP-FINISH": {"id": "SUP-FINISH", "name": "معرض التشطيبات الحديثة", "materials": ["MAT-CERAMIC", "MAT-PAINT-INT", "MAT-WP"], "lead_time_days": 14, "price_stability": 3.0, "rating": 3.5, "last_updated": "2026-06-01"}, "SUP-ALUM": {"id": "SUP-ALUM", "name": "مصنع الألمنيوم السعودي", "materials": ["MAT-WINDOW", "MAT-DOOR"], "lead_time_days": 21, "price_stability": 3.5, "rating": 4.0, "last_updated": "2026-06-01"}}, "projects": {"PRJ-001": {"id": "PRJ-001", "name": "مبنى إداري - الرياض", "client": "أمانة منطقة الرياض", "type": "government", "location": "الرياض", "contract_value": 5400000, "duration_months": 14, "actual_cost": 4860000, "actual_profit": 540000, "deviation_pct": 8.0, "deviation_reason": "ارتفاع أسعار الحديد"}, "PRJ-002": {"id": "PRJ-002", "name": "فيلا سكنية فاخرة", "client": "عميل خاص", "type": "private", "location": "جدة", "contract_value": 2200000, "duration_months": 10, "actual_cost": 1870000, "actual_profit": 330000, "deviation_pct": -2.0, "deviation_reason": "توفير في التشطيبات"}, "PRJ-003": {"id": "PRJ-003", "name": "مجمع مستودعات", "client": "شركة لوجستية", "type": "private", "location": "الدمام", "contract_value": 8900000, "duration_months": 12, "actual_cost": 8455000, "actual_profit": 445000, "deviation_pct": 12.0, "deviation_reason": "تأخر اعتمادات المالك وأوامر تغيير"}, "PRJ-004": {"id": "PRJ-004", "name": "مدرسة حكومية", "client": "وزارة التعليم", "type": "government", "location": "القصيم", "contract_value": 6300000, "duration_months": 16, "actual_cost": 5985000, "actual_profit": 315000, "deviation_pct": 9.5, "deviation_reason": "ظروف موقع غير متوقعة"}, "PRJ-005": {"id": "PRJ-005", "name": "أعمال أسوار وتسوير", "client": "هيئة تطوير", "type": "subcontract", "location": "الرياض", "contract_value": 1500000, "duration_months": 5, "actual_cost": 1275000, "actual_profit": 225000, "deviation_pct": -1.0, "deviation_reason": "تنفيذ ضمن الخطة"}, "PRJ-006": {"id": "PRJ-006", "name": "محطة معالجة - EPC", "client": "شركة مياه", "type": "epc", "location": "الطائف", "contract_value": 15800000, "duration_months": 20, "actual_cost": 15010000, "actual_profit": 790000, "deviation_pct": 14.0, "deviation_reason": "مخاطر فنية وتغير المواصفات"}, "PRJ-007": {"id": "PRJ-007", "name": "مبنى تجاري متعدد الأدوار", "client": "مطور عقاري", "type": "private", "location": "الرياض", "contract_value": 11200000, "duration_months": 18, "actual_cost": 10080000, "actual_profit": 1120000, "deviation_pct": 5.0, "deviation_reason": "إدارة جيدة للمشتريات"}, "PRJ-008": {"id": "PRJ-008", "name": "صيانة وترميم مبانٍ", "client": "جهة حكومية", "type": "government", "location": "حائل", "contract_value": 3100000, "duration_months": 8, "actual_cost": 2945000, "actual_profit": 155000, "deviation_pct": 11.0, "deviation_reason": "نطاق عمل غير واضح"}}}, "sample": {"id": "TND-2026-001", "name": "إنشاء مبنى إداري - مسارات التشييد", "client": "أمانة منطقة الرياض", "type": "government", "location": "الرياض", "duration_months": 14, "client_reputation": 4.5, "competition_level": 4.0, "advance_payment_pct": 0.1, "retention_pct": 0.05, "items": [{"id": "B-01", "description": "أعمال الحفر والردم", "unit": "م3", "quantity": 1200, "resources": [{"resource_type": "equipment", "resource_id": "EQP-EXCAVATOR", "coefficient": 0.005}, {"resource_type": "equipment", "resource_id": "EQP-TRUCK", "coefficient": 0.01}, {"resource_type": "labor", "resource_id": "LAB-WORKER", "coefficient": 0.02}]}, {"id": "B-02", "description": "خرسانة عادية (نظافة وقواعد)", "unit": "م3", "quantity": 150, "resources": [{"resource_type": "material", "resource_id": "MAT-CONC25", "coefficient": 1.0}, {"resource_type": "labor", "resource_id": "LAB-WORKER", "coefficient": 0.3}, {"resource_type": "labor", "resource_id": "LAB-MASON", "coefficient": 0.2}, {"resource_type": "equipment", "resource_id": "EQP-PUMP", "coefficient": 0.02}]}, {"id": "B-03", "description": "خرسانة مسلحة C30 (هياكل)", "unit": "م3", "quantity": 800, "resources": [{"resource_type": "material", "resource_id": "MAT-CONC30", "coefficient": 1.0}, {"resource_type": "labor", "resource_id": "LAB-WORKER", "coefficient": 0.3}, {"resource_type": "labor", "resource_id": "LAB-MASON", "coefficient": 0.25}, {"resource_type": "equipment", "resource_id": "EQP-PUMP", "coefficient": 0.03}]}, {"id": "B-04", "description": "حديد التسليح", "unit": "طن", "quantity": 95, "resources": [{"resource_type": "material", "resource_id": "MAT-STEEL", "coefficient": 1.05}, {"resource_type": "material", "resource_id": "MAT-TIEWIRE", "coefficient": 0.015}, {"resource_type": "labor", "resource_id": "LAB-STEELFIXER", "coefficient": 8.0}, {"resource_type": "labor", "resource_id": "LAB-WORKER", "coefficient": 4.0}]}, {"id": "B-05", "description": "شدة خشبية (نجارة مسلح)", "unit": "م2", "quantity": 4500, "resources": [{"resource_type": "material", "resource_id": "MAT-PLYWOOD", "coefficient": 0.3}, {"resource_type": "labor", "resource_id": "LAB-CARPENTER", "coefficient": 0.3}, {"resource_type": "labor", "resource_id": "LAB-WORKER", "coefficient": 0.15}]}, {"id": "B-06", "description": "أعمال البناء بالبلوك 20سم", "unit": "م2", "quantity": 3200, "resources": [{"resource_type": "material", "resource_id": "MAT-BLOCK20", "coefficient": 12.5}, {"resource_type": "material", "resource_id": "MAT-CEMENT", "coefficient": 0.2}, {"resource_type": "material", "resource_id": "MAT-SAND", "coefficient": 0.03}, {"resource_type": "labor", "resource_id": "LAB-MASON", "coefficient": 0.12}, {"resource_type": "labor", "resource_id": "LAB-WORKER", "coefficient": 0.12}]}, {"id": "B-07", "description": "أعمال اللياسة (داخلي وخارجي)", "unit": "م2", "quantity": 6400, "resources": [{"resource_type": "material", "resource_id": "MAT-CEMENT", "coefficient": 0.15}, {"resource_type": "material", "resource_id": "MAT-SAND", "coefficient": 0.025}, {"resource_type": "labor", "resource_id": "LAB-PLASTER", "coefficient": 0.15}, {"resource_type": "labor", "resource_id": "LAB-WORKER", "coefficient": 0.1}]}, {"id": "B-08", "description": "تبليط سيراميك أرضيات", "unit": "م2", "quantity": 2800, "resources": [{"resource_type": "material", "resource_id": "MAT-CERAMIC", "coefficient": 1.05}, {"resource_type": "material", "resource_id": "MAT-CEMENT", "coefficient": 0.1}, {"resource_type": "material", "resource_id": "MAT-SAND", "coefficient": 0.02}, {"resource_type": "labor", "resource_id": "LAB-TILER", "coefficient": 0.2}, {"resource_type": "labor", "resource_id": "LAB-WORKER", "coefficient": 0.15}]}, {"id": "B-09", "description": "أعمال الدهانات", "unit": "م2", "quantity": 6400, "resources": [{"resource_type": "material", "resource_id": "MAT-PAINT-INT", "coefficient": 1.1}, {"resource_type": "labor", "resource_id": "LAB-PAINTER", "coefficient": 0.12}, {"resource_type": "labor", "resource_id": "LAB-WORKER", "coefficient": 0.05}]}, {"id": "B-10", "description": "أعمال العزل المائي", "unit": "م2", "quantity": 1500, "resources": [{"resource_type": "material", "resource_id": "MAT-WP", "coefficient": 1.05}, {"resource_type": "labor", "resource_id": "LAB-PLASTER", "coefficient": 0.05}, {"resource_type": "labor", "resource_id": "LAB-WORKER", "coefficient": 0.15}]}, {"id": "B-11", "description": "أسوار حدودية", "unit": "م2", "quantity": 600, "resources": [{"resource_type": "subcontractor", "resource_id": "SUB-FENCE", "coefficient": 1.0}, {"resource_type": "labor", "resource_id": "LAB-FOREMAN", "coefficient": 0.01}]}, {"id": "B-12", "description": "نوافذ ألمنيوم", "unit": "م2", "quantity": 450, "resources": [{"resource_type": "material", "resource_id": "MAT-WINDOW", "coefficient": 1.0}, {"resource_type": "labor", "resource_id": "LAB-WORKER", "coefficient": 0.1}]}, {"id": "B-13", "description": "أبواب خشبية", "unit": "عدد", "quantity": 80, "resources": [{"resource_type": "material", "resource_id": "MAT-DOOR", "coefficient": 1.0}, {"resource_type": "labor", "resource_id": "LAB-CARPENTER", "coefficient": 0.5}]}, {"id": "B-14", "description": "أعمال الكهرباء (مقاول باطن)", "unit": "م2", "quantity": 3500, "resources": [{"resource_type": "subcontractor", "resource_id": "SUB-ELEC", "coefficient": 1.0}]}, {"id": "B-15", "description": "أعمال الميكانيكا والتكييف (مقاول باطن)", "unit": "م2", "quantity": 3500, "resources": [{"resource_type": "subcontractor", "resource_id": "SUB-MECH", "coefficient": 1.0}]}]}};
+/*
+ * محرّكات MASARAT AI بصيغة JavaScript (نسخة المتصفح الثابتة).
+ * منقولة بدقّة عن محرّكات Python (التسعير/المخاطر/القرار/التدفقات/التعلّم)
+ * لتعمل بالكامل داخل المتصفح بلا أي خادم — قابلة للرفع على أي استضافة.
+ *
+ * تعمل في المتصفح (دوال عامة) وفي Node (module.exports) للاختبار.
+ */
+(function (root) {
+  "use strict";
+
+  const round2 = (x) => Math.round((x + Number.EPSILON) * 100) / 100;
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const mean = (a) => (a.length ? a.reduce((s, x) => s + x, 0) / a.length : 0);
+  const pstdev = (a) => {
+    if (a.length < 2) return 0;
+    const m = mean(a);
+    return Math.sqrt(mean(a.map((x) => (x - m) ** 2)));
+  };
+
+  // --------------------------------------------------------------- الأسعار
+  function resourceRate(db, type, id) {
+    if (type === "material" && db.materials[id]) return db.materials[id].unit_price;
+    if (type === "labor" && db.labor[id]) return db.labor[id].daily_rate;
+    if (type === "equipment" && db.equipment[id]) return db.equipment[id].rate;
+    if (type === "subcontractor" && db.subcontractors[id]) return db.subcontractors[id].unit_price;
+    throw new Error("مورد غير معروف: " + type + ":" + id);
+  }
+
+  function priceItem(item, db) {
+    if ((!item.resources || !item.resources.length) && item.unit_rate) {
+      item.direct_total = round2(item.unit_rate * item.quantity);
+      const split =
+        (item.material_cost || 0) + (item.labor_cost || 0) +
+        (item.equipment_cost || 0) + (item.subcontractor_cost || 0);
+      item.other_cost = round2(item.direct_total - split);
+      return;
+    }
+    let m = 0, l = 0, e = 0, s = 0;
+    for (const u of item.resources || []) {
+      const rate = resourceRate(db, u.resource_type, u.resource_id);
+      const c = u.coefficient * rate;
+      if (u.resource_type === "material") m += c;
+      else if (u.resource_type === "labor") l += c;
+      else if (u.resource_type === "equipment") e += c;
+      else if (u.resource_type === "subcontractor") s += c;
+    }
+    item.material_cost = round2(m * item.quantity);
+    item.labor_cost = round2(l * item.quantity);
+    item.equipment_cost = round2(e * item.quantity);
+    item.subcontractor_cost = round2(s * item.quantity);
+    item.other_cost = 0;
+    item.unit_rate = round2(m + l + e + s);
+    item.direct_total = round2(item.unit_rate * item.quantity);
+  }
+
+  function priceTender(tender, db, cfg, riskFactorPct) {
+    cfg = cfg || { overhead_pct: 0.1, contingency_pct: 0.15, profit_pct: 0.15, vat_pct: 0.15 };
+    riskFactorPct = riskFactorPct || 0;
+    let mat = 0, lab = 0, eq = 0, sub = 0, oth = 0;
+    for (const it of tender.items) {
+      priceItem(it, db);
+      mat += it.material_cost; lab += it.labor_cost; eq += it.equipment_cost;
+      sub += it.subcontractor_cost; oth += it.other_cost;
+    }
+    const direct = mat + lab + eq + sub + oth;
+    const overhead = direct * cfg.overhead_pct;
+    const contingency = direct * cfg.contingency_pct;
+    const risk = direct * (riskFactorPct / 100);
+    const total = direct + overhead + contingency + risk;
+    const profit = total * cfg.profit_pct;
+    const selling = total + profit;
+    const vat = selling * cfg.vat_pct;
+    const final = selling + vat;
+    return {
+      materials: round2(mat), labor: round2(lab), equipment: round2(eq),
+      subcontractors: round2(sub), other: round2(oth), direct_cost: round2(direct),
+      overhead: round2(overhead), contingency: round2(contingency), risk_adjustment: round2(risk),
+      total_cost: round2(total), profit: round2(profit), selling_price: round2(selling),
+      vat: round2(vat), final_price: round2(final),
+      margin_pct: selling ? round2((profit / selling) * 100) : 0,
+    };
+  }
+
+  // --------------------------------------------------------------- المخاطر
+  function histAvgDeviation(db, type) {
+    let items = Object.values(db.projects);
+    if (type) items = items.filter((p) => p.type === type);
+    return items.length ? mean(items.map((p) => p.deviation_pct)) : 0;
+  }
+  const riskLevel = (s) => (s <= 6 ? "low" : s <= 14 ? "medium" : "high");
+
+  function assessRisk(tender, db) {
+    const items = [];
+    const usedMat = new Set();
+    tender.items.forEach((it) =>
+      (it.resources || []).forEach((u) => {
+        if (u.resource_type === "material") usedMat.add(u.resource_id);
+      })
+    );
+    const trends = [...usedMat].filter((m) => db.materials[m]).map((m) => db.materials[m].trend_pct);
+    const avgTrend = trends.length ? mean(trends) : 0;
+    items.push({ category: "السوق", description: `تقلب أسعار المواد (متوسط الاتجاه ${avgTrend.toFixed(1)}%)`,
+      probability: clamp(2 + avgTrend, 1, 5), impact: 4.0, mitigation: "تثبيت أسعار الموردين مبكراً وعقود توريد طويلة" });
+
+    const histDev = histAvgDeviation(db, tender.type);
+    items.push({ category: "التنفيذ", description: `انحراف التكلفة التاريخي لهذا النوع ${histDev.toFixed(1)}%`,
+      probability: clamp(2 + histDev / 4, 1, 5), impact: 4.0, mitigation: "رفع دقة حصر الكميات وضبط الإنتاجية ميدانياً" });
+
+    const contractMap = { government: 3.0, epc: 4.0, private: 3.0, subcontract: 2.5 };
+    let contractProb = contractMap[tender.type] != null ? contractMap[tender.type] : 3.0;
+    if ((tender.advance_payment_pct || 0) < 0.1) contractProb += 1.0;
+    items.push({ category: "العقد", description: "شروط تعاقدية، محتجزات، وأوامر تغيير محتملة",
+      probability: clamp(contractProb, 1, 5), impact: 3.5, mitigation: "مراجعة قانونية كاملة قبل التوقيع" });
+
+    const stab = Object.values(db.suppliers || {}).map((s) => s.price_stability);
+    const avgStab = stab.length ? mean(stab) : 3.0;
+    items.push({ category: "الموردون", description: `ثبات أسعار الموردين (متوسط ${avgStab.toFixed(1)}/5)`,
+      probability: clamp(6 - avgStab, 1, 5), impact: 3.0, mitigation: "تعدد الموردين وعروض أسعار محدّثة دورياً" });
+
+    items.push({ category: "الوقت", description: `مدة التنفيذ ${tender.duration_months} شهراً`,
+      probability: clamp(1.5 + tender.duration_months / 6, 1, 5), impact: 3.5, mitigation: "جدول زمني واقعي مع مسار حرج" });
+
+    items.forEach((r) => { r.score = round2(r.probability * r.impact); r.level = riskLevel(r.score); });
+    const avgScore = mean(items.map((r) => r.score));
+    return { items, total_score: round2(avgScore), risk_factor_pct: round2((avgScore / 25) * 10), overall_level: riskLevel(avgScore) };
+  }
+
+  // ---------------------------------------------------------------- التعلّم
+  function learn(tender, db) {
+    const projects = Object.values(db.projects);
+    const n = projects.length;
+    if (!n) return { sample_size: 0, recommended_contingency_pct: 15, recommended_margin_pct: 15, calibrated_cost_factor: 1, confidence: 0, method: "none", predicted_deviation_pct: 0, avg_deviation_pct: 0, std_deviation_pct: 0 };
+    const devs = projects.map((p) => p.deviation_pct);
+    const avg = mean(devs), std = pstdev(devs);
+    const margins = projects.filter((p) => p.contract_value).map((p) => (p.actual_profit / p.contract_value) * 100);
+    const recMargin = margins.length ? round2(mean(margins)) : 15;
+    const same = projects.filter((p) => p.type === tender.type).map((p) => p.deviation_pct);
+    const pred = same.length ? mean(same) : avg;
+    const recCont = round2(clamp(pred + 0.5 * std, 8, 25));
+    return {
+      sample_size: n, avg_deviation_pct: round2(avg), std_deviation_pct: round2(std),
+      predicted_deviation_pct: round2(pred), recommended_contingency_pct: recCont,
+      recommended_margin_pct: recMargin, calibrated_cost_factor: round2(1 + pred / 100),
+      confidence: round2(clamp(40 + n * 6, 0, 95)), method: "historical_mean",
+    };
+  }
+
+  // ----------------------------------------------------------------- القرار
+  function decideBid(tender, cost, risk) {
+    const c0 = (v) => clamp(v, 0, 100);
+    const marginScore = c0((cost.margin_pct / 15) * 100);
+    const riskScore = c0(100 - risk.risk_factor_pct * 10);
+    const compScore = c0(((5 - tender.competition_level) / 4) * 100);
+    const clientScore = c0((tender.client_reputation / 5) * 100);
+    const liqScore = c0(((tender.advance_payment_pct - tender.retention_pct + 0.1) / 0.25) * 100);
+    const score = round2(0.3 * marginScore + 0.25 * riskScore + 0.2 * compScore + 0.15 * clientScore + 0.1 * liqScore);
+    let win = 75 - (tender.competition_level - 1) * 11 - Math.max(0, cost.margin_pct - 12) * 2 + (tender.client_reputation - 3) * 2;
+    win = round2(clamp(win, 5, 95));
+    const conditions = [];
+    if (marginScore < 60) conditions.push("رفع هامش الربح أو خفض التكلفة المباشرة قبل التقديم");
+    if (risk.risk_factor_pct >= 5) conditions.push("تثبيت أسعار الموردين الرئيسيين قبل التقديم");
+    if (tender.advance_payment_pct < 0.1) conditions.push("التفاوض على دفعة مقدمة لا تقل عن 10%");
+    if (tender.competition_level >= 4) conditions.push("مراجعة تنافسية السعر مقابل السوق");
+    let decision, rationale;
+    if (score >= 65) { decision = "BID"; rationale = "المؤشرات إيجابية: ربحية ومخاطر مقبولة مع فرصة فوز معقولة."; }
+    else if (score >= 50) { decision = "BID_WITH_CONDITIONS"; rationale = "فرصة جيدة لكنها مشروطة بمعالجة نقاط الضعف."; }
+    else { decision = "NO_BID"; rationale = "المخاطر أو ضعف الربحية يفوقان الفرصة."; }
+    return { decision, score, win_probability: win, rationale, conditions: decision === "BID" ? [] : conditions,
+      factors: { "هامش الربح": round2(marginScore), "المخاطر": round2(riskScore), "المنافسة": round2(compScore), "سمعة العميل": round2(clientScore), "السيولة": round2(liqScore) } };
+  }
+
+  // -------------------------------------------------------------- التدفقات
+  function sCurve(n, k) {
+    k = k || 7;
+    if (n <= 1) return [1];
+    const cdf = (t) => 1 / (1 + Math.exp(-k * (t - 0.5)));
+    const raw = [];
+    for (let i = 1; i <= n; i++) raw.push(cdf(i / n) - cdf((i - 1) / n));
+    const tot = raw.reduce((s, x) => s + x, 0);
+    return raw.map((r) => r / tot);
+  }
+
+  function projectCashflow(tender, cost) {
+    const n = Math.max(1, tender.duration_months);
+    const w = sCurve(n, 7);
+    const contract = cost.selling_price, totalCost = cost.total_cost;
+    const advance = tender.advance_payment_pct * contract;
+    const size = n + 1;
+    const costs = new Array(size + 2).fill(0);
+    const rev = new Array(size + 2).fill(0);
+    rev[1] += advance;
+    let totalRet = 0;
+    for (let i = 1; i <= n; i++) {
+      costs[i] = totalCost * w[i - 1];
+      const billing = contract * w[i - 1];
+      const ret = tender.retention_pct * billing;
+      const advRec = tender.advance_payment_pct * billing;
+      totalRet += ret;
+      rev[i + 1] += billing - ret - advRec;
+    }
+    rev[size] += totalRet;
+    const months = [];
+    let cum = 0, peak = 0;
+    for (let i = 1; i <= size; i++) {
+      const net = rev[i] - costs[i];
+      cum += net; peak = Math.min(peak, cum);
+      months.push({ month: i, cost: round2(costs[i]), revenue: round2(rev[i]), net: round2(net), cumulative: round2(cum) });
+    }
+    return { months, peak_funding_required: round2(-peak), final_cumulative: round2(cum) };
+  }
+
+  // ----------------------------------------------------------- التحليل الكامل
+  function analyze(tender, db) {
+    const learning = learn(tender, db);
+    const risk = assessRisk(tender, db);
+    const cfg = { overhead_pct: 0.1, contingency_pct: learning.sample_size ? learning.recommended_contingency_pct / 100 : 0.15, profit_pct: 0.15, vat_pct: 0.15 };
+    const cost = priceTender(tender, db, cfg, risk.risk_factor_pct);
+    const decision = decideBid(tender, cost, risk);
+    const cashflow = projectCashflow(tender, cost);
+    return { tender, cost, risk, decision, cashflow, learning };
+  }
+
+  const API = { round2, clamp, resourceRate, priceItem, priceTender, assessRisk, learn, decideBid, projectCashflow, analyze };
+  root.MasaratEngine = API;
+  if (typeof module !== "undefined" && module.exports) module.exports = API;
+})(typeof window !== "undefined" ? window : globalThis);
+
+/*
+ * قارئ جداول الكميات (BOQ) بصيغة JavaScript — منقول عن boq_import.py.
+ * يكتشف الأعمدة من ترويسات عربية/إنجليزية ويبني كائن مناقصة. CSV أصلاً،
+ * وExcel عبر SheetJS (في المتصفح). يعمل في المتصفح وNode.
+ */
+(function (root) {
+  "use strict";
+
+  const KW = {
+    code: ["الكود", "كود", "رقم البند", "رقم", "بند رقم", "item no", "code", "s/n", "sr", "م", "#", "ت", "no"],
+    description: ["الوصف", "وصف", "البند", "بيان", "الأعمال", "الاعمال", "description", "desc"],
+    unit: ["الوحدة", "وحدة", "unit", "uom"],
+    quantity: ["الكمية", "كمية", "كميه", "العدد", "quantity", "qty"],
+    unit_rate: ["سعر الوحدة", "السعر", "سعر", "الفئة", "فئة", "unit rate", "unit price", "rate", "price"],
+    total: ["الإجمالي", "الاجمالي", "اجمالي", "القيمة", "قيمة", "total", "amount"],
+    material: ["مواد", "خامات", "material"],
+    labor: ["عمالة", "عمال", "labor", "labour"],
+    equipment: ["معدات", "آليات", "اليات", "equipment"],
+    subcontractor: ["مقاول باطن", "باطن", "subcontractor", "sub-contractor"],
+  };
+  const ORDER = ["code", "description", "quantity", "unit_rate", "total", "material", "labor", "equipment", "subcontractor", "unit"];
+
+  const norm = (x) => (x == null ? "" : String(x).trim().toLowerCase());
+
+  function toFloat(v) {
+    if (v == null) return 0;
+    if (typeof v === "number") return v;
+    const m = String(v).replace(/[,٬]/g, "").match(/-?\d+(?:\.\d+)?/);
+    return m ? parseFloat(m[0]) : 0;
+  }
+
+  function matchField(cell, field) {
+    cell = norm(cell);
+    if (!cell) return false;
+    for (let kw of KW[field]) {
+      kw = kw.toLowerCase();
+      if (kw.length <= 2) { if (cell === kw) return true; }
+      else if (cell.includes(kw)) return true;
+    }
+    return false;
+  }
+
+  function detectHeader(row) {
+    const map = {}, used = new Set();
+    for (const field of ORDER) {
+      for (let i = 0; i < row.length; i++) {
+        if (used.has(i)) continue;
+        if (matchField(row[i], field)) { map[field] = i; used.add(i); break; }
+      }
+    }
+    return map;
+  }
+
+  function findHeader(rows) {
+    let best = -1, bestMap = {}, bestScore = 0;
+    for (let i = 0; i < Math.min(15, rows.length); i++) {
+      const map = detectHeader(rows[i]);
+      const score = ["description", "quantity", "unit"].filter((k) => k in map).length;
+      if (score > bestScore) { best = i; bestMap = map; bestScore = score; }
+    }
+    if (!("description" in bestMap) || !("quantity" in bestMap))
+      throw new Error("تعذّر اكتشاف أعمدة الجدول. تأكد من وجود عمودي 'الوصف' و'الكمية'.");
+    return { idx: best, map: bestMap };
+  }
+
+  function buildTenderFromRows(rows, meta) {
+    meta = meta || {};
+    const { idx, map } = findHeader(rows);
+    const items = [];
+    let n = 0;
+    for (let r = idx + 1; r < rows.length; r++) {
+      const row = rows[r];
+      const cell = (f) => (map[f] != null && map[f] < row.length ? row[map[f]] : null);
+      const desc = norm(cell("description"));
+      const qty = toFloat(cell("quantity"));
+      if (!desc || qty <= 0) continue;
+      n++;
+      const item = { id: String(cell("code") || "I-" + String(n).padStart(3, "0")).trim(),
+        description: String(cell("description")).trim(), unit: String(cell("unit") || "وحدة").trim(),
+        quantity: qty, resources: [], material_cost: 0, labor_cost: 0, equipment_cost: 0,
+        subcontractor_cost: 0, other_cost: 0, unit_rate: 0, source: "imported" };
+      const comps = { material: toFloat(cell("material")), labor: toFloat(cell("labor")),
+        equipment: toFloat(cell("equipment")), subcontractor: toFloat(cell("subcontractor")) };
+      const compSum = comps.material + comps.labor + comps.equipment + comps.subcontractor;
+      const rate = toFloat(cell("unit_rate")), total = toFloat(cell("total"));
+      if (compSum > 0) {
+        item.unit_rate = Math.round(compSum * 100) / 100;
+        item.material_cost = Math.round(comps.material * qty * 100) / 100;
+        item.labor_cost = Math.round(comps.labor * qty * 100) / 100;
+        item.equipment_cost = Math.round(comps.equipment * qty * 100) / 100;
+        item.subcontractor_cost = Math.round(comps.subcontractor * qty * 100) / 100;
+      } else if (rate > 0) item.unit_rate = Math.round(rate * 100) / 100;
+      else if (total > 0) item.unit_rate = Math.round((total / qty) * 100) / 100;
+      items.push(item);
+    }
+    if (!items.length) throw new Error("لم يتم العثور على بنود صالحة (وصف + كمية موجبة).");
+    return { id: meta.id || "TND-IMPORT", name: meta.name || "مناقصة مستوردة", client: meta.client || "غير محدد",
+      type: meta.type || "private", location: meta.location || "الرياض", duration_months: meta.duration_months || 12,
+      client_reputation: 3.0, competition_level: 3.0, advance_payment_pct: 0.1, retention_pct: 0.05, items };
+  }
+
+  function parseCSV(text) {
+    // مُحلّل CSV بسيط يدعم علامات الاقتباس
+    const rows = [];
+    let row = [], field = "", q = false;
+    text = text.replace(/^﻿/, "");
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (q) {
+        if (c === '"' && text[i + 1] === '"') { field += '"'; i++; }
+        else if (c === '"') q = false;
+        else field += c;
+      } else if (c === '"') q = true;
+      else if (c === ",") { row.push(field); field = ""; }
+      else if (c === "\n") { row.push(field); rows.push(row); row = []; field = ""; }
+      else if (c === "\r") { /* skip */ }
+      else field += c;
+    }
+    if (field.length || row.length) { row.push(field); rows.push(row); }
+    return rows;
+  }
+
+  const API = { buildTenderFromRows, parseCSV, toFloat };
+  root.MasaratBOQ = API;
+  if (typeof module !== "undefined" && module.exports) module.exports = API;
+})(typeof window !== "undefined" ? window : globalThis);
+
+
+const $ = (s) => document.querySelector(s);
+const money = (n) => (n || 0).toLocaleString("en-US", { maximumFractionDigits: 0 }) + " ريال";
+const DB_KEY = "masarat_db_v1";
+
+let DB = JSON.parse(JSON.stringify(DATA.db));
+try { const saved = localStorage.getItem(DB_KEY); if (saved) DB = JSON.parse(saved); } catch (e) {}
+
+document.querySelectorAll("nav button").forEach((b) => (b.onclick = () => {
+  document.querySelectorAll("nav button").forEach((x) => x.classList.remove("active"));
+  b.classList.add("active");
+  ["analyze", "prices", "about"].forEach((t) => $("#tab-" + t).classList.add("hidden"));
+  $("#tab-" + b.dataset.tab).classList.remove("hidden");
+  if (b.dataset.tab === "prices") renderPrices();
+}));
+
+let LAST = null;
+function renderAnalysis(a) {
+  LAST = a;
+  const d = a.decision, c = a.cost, r = a.risk, cf = a.cashflow, ln = a.learning;
+  const vtext = { BID: "✅ تقديم (BID)", NO_BID: "❌ عدم التقديم (NO BID)", BID_WITH_CONDITIONS: "⚠️ تقديم بشروط" }[d.decision];
+  let h = `<div class="card"><div class="verdict v-${d.decision}">${vtext}</div>
+    <div class="kpis">
+      <div class="kpi"><div class="v">${d.score}</div><div class="l">درجة القرار /100</div></div>
+      <div class="kpi"><div class="v">${d.win_probability}%</div><div class="l">احتمال الفوز</div></div>
+      <div class="kpi"><div class="v">${c.margin_pct}%</div><div class="l">هامش الربح</div></div>
+      <div class="kpi"><div class="v">${r.overall_level}</div><div class="l">مستوى المخاطر</div></div></div>
+    <div class="kpis">
+      <div class="kpi"><div class="v">${money(c.direct_cost)}</div><div class="l">التكلفة المباشرة</div></div>
+      <div class="kpi"><div class="v">${money(c.selling_price)}</div><div class="l">سعر البيع</div></div>
+      <div class="kpi"><div class="v">${money(c.final_price)}</div><div class="l">شامل الضريبة</div></div>
+      <div class="kpi"><div class="v">${money(cf.peak_funding_required)}</div><div class="l">أقصى تمويل مطلوب</div></div></div>
+    <p class="muted">${d.rationale}</p>
+    <button class="btn" id="btnExport">⬇ تصدير CSV</button></div>`;
+
+  const cr = [["المواد", c.materials], ["العمالة", c.labor], ["المعدات", c.equipment],
+    ["مقاولو الباطن", c.subcontractors], ["غير مصنّف", c.other], ["<b>التكلفة المباشرة</b>", c.direct_cost],
+    ["مصاريف إدارية", c.overhead], ["احتياطي", c.contingency], ["تعديل المخاطر", c.risk_adjustment],
+    ["<b>إجمالي التكلفة</b>", c.total_cost], ["الربح", c.profit], ["<b>سعر البيع</b>", c.selling_price],
+    ["ضريبة 15%", c.vat], ["<b>السعر النهائي</b>", c.final_price]];
+  h += `<div class="card"><h2>تفصيل التكلفة</h2><table><tr><th>البند</th><th>القيمة</th></tr>` +
+    cr.map((x) => `<tr><td>${x[0]}</td><td>${money(x[1])}</td></tr>`).join("") + `</table></div>`;
+
+  if (ln && ln.sample_size) h += `<div class="card"><h2>التعلّم الآلي (${ln.sample_size} مشروعاً)</h2>
+    <table><tr><th>المؤشر</th><th>القيمة</th></tr>
+    <tr><td>الانحراف المتوقّع</td><td>${ln.predicted_deviation_pct}%</td></tr>
+    <tr><td>الاحتياطي الموصى به (مُطبّق)</td><td>${ln.recommended_contingency_pct}%</td></tr>
+    <tr><td>هامش الربح الموصى به</td><td>${ln.recommended_margin_pct}%</td></tr>
+    <tr><td>الثقة</td><td>${ln.confidence}%</td></tr></table></div>`;
+
+  h += `<div class="card"><h2>سجل المخاطر (معامل ${r.risk_factor_pct}%)</h2><table>
+    <tr><th>الفئة</th><th>الوصف</th><th>الدرجة</th><th>المستوى</th><th>التخفيف</th></tr>` +
+    r.items.map((x) => `<tr><td>${x.category}</td><td>${x.description}</td><td>${x.score}</td><td>${x.level}</td><td>${x.mitigation}</td></tr>`).join("") + `</table></div>`;
+
+  h += `<div class="card"><h2>التدفقات النقدية</h2><table>
+    <tr><th>الشهر</th><th>التكلفة</th><th>الإيراد</th><th>الصافي</th><th>التراكمي</th></tr>` +
+    cf.months.map((m) => `<tr><td>${m.month}</td><td>${money(m.cost)}</td><td>${money(m.revenue)}</td><td>${money(m.net)}</td><td>${money(m.cumulative)}</td></tr>`).join("") + `</table></div>`;
+
+  $("#results").innerHTML = h;
+  $("#results").classList.remove("hidden");
+  $("#btnExport").onclick = exportCSV;
+  $("#results").scrollIntoView({ behavior: "smooth" });
+}
+
+function run(tender) {
+  try { renderAnalysis(MasaratEngine.analyze(JSON.parse(JSON.stringify(tender)), DB)); }
+  catch (e) { alert("خطأ: " + e.message); }
+}
+$("#btnDemo").onclick = () => run(DATA.sample);
+
+$("#btnUpload").onclick = () => {
+  const f = $("#boqFile").files[0];
+  if (!f) { alert("اختر ملف BOQ أولاً"); return; }
+  const meta = { name: $("#pName").value || f.name, client: $("#pClient").value || "غير محدد",
+    type: $("#pType").value, duration_months: parseInt($("#pDur").value) || 12 };
+  const reader = new FileReader();
+  const isCsv = f.name.toLowerCase().endsWith(".csv");
+  reader.onload = (ev) => {
+    try {
+      let rows;
+      if (isCsv) rows = MasaratBOQ.parseCSV(ev.target.result);
+      else {
+        if (typeof XLSX === "undefined") { alert("قراءة Excel تحتاج اتصالاً بالإنترنت (لتحميل مكتبة القراءة). استخدم CSV بدلاً منها."); return; }
+        const wb = XLSX.read(new Uint8Array(ev.target.result), { type: "array" });
+        rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: null });
+      }
+      run(MasaratBOQ.buildTenderFromRows(rows, meta));
+    } catch (e) { alert("تعذّر القراءة: " + e.message); }
+  };
+  if (isCsv) reader.readAsText(f, "utf-8"); else reader.readAsArrayBuffer(f);
+};
+
+function exportCSV() {
+  if (!LAST) return;
+  const c = LAST.cost;
+  const rows = [["البند", "القيمة"], ["المواد", c.materials], ["العمالة", c.labor], ["المعدات", c.equipment],
+    ["مقاولو الباطن", c.subcontractors], ["غير مصنّف", c.other], ["التكلفة المباشرة", c.direct_cost],
+    ["مصاريف إدارية", c.overhead], ["احتياطي", c.contingency], ["تعديل المخاطر", c.risk_adjustment],
+    ["إجمالي التكلفة", c.total_cost], ["الربح", c.profit], ["سعر البيع", c.selling_price],
+    ["ضريبة", c.vat], ["السعر النهائي", c.final_price], ["هامش الربح %", c.margin_pct],
+    ["القرار", LAST.decision.decision], ["احتمال الفوز %", LAST.decision.win_probability]];
+  const csv = "﻿" + rows.map((r) => r.join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "masarat_cost_sheet.csv"; a.click();
+}
+
+function renderPrices() {
+  const mk = (title, arr, cols, fields) => `<h2>${title}</h2><table><tr>${cols.map((c) => `<th>${c}</th>`).join("")}</tr>` +
+    arr.map((o) => `<tr data-id="${o.id}" data-kind="${title}">` +
+      fields.map((f) => `<td contenteditable data-f="${f}">${o[f]}</td>`).join("") + `</tr>`).join("") + `</table>`;
+  $("#pricesOut").innerHTML =
+    mk("materials", Object.values(DB.materials), ["المادة", "السعر", "الوحدة", "الاتجاه%"], ["name_ar", "unit_price", "unit", "trend_pct"]) +
+    mk("labor", Object.values(DB.labor), ["المهنة", "الأجر اليومي"], ["name_ar", "daily_rate"]) +
+    mk("subcontractors", Object.values(DB.subcontractors), ["النشاط", "المقاول", "السعر"], ["activity", "name", "unit_price"]);
+}
+
+$("#btnSavePrices").onclick = () => {
+  document.querySelectorAll("#pricesOut tr[data-id]").forEach((tr) => {
+    const kind = tr.dataset.kind, id = tr.dataset.id;
+    tr.querySelectorAll("td[data-f]").forEach((td) => {
+      const f = td.dataset.f; let v = td.innerText.trim();
+      if (["unit_price", "daily_rate", "trend_pct", "rate"].includes(f)) v = parseFloat(v) || 0;
+      if (DB[kind] && DB[kind][id]) DB[kind][id][f] = v;
+    });
+  });
+  localStorage.setItem(DB_KEY, JSON.stringify(DB));
+  alert("✓ حُفظت الأسعار في متصفحك وستُستخدم في كل التحليلات.");
+};
+$("#btnResetPrices").onclick = () => {
+  localStorage.removeItem(DB_KEY); DB = JSON.parse(JSON.stringify(DATA.db)); renderPrices();
+  alert("↺ استُعيدت الأسعار الافتراضية.");
+};
+
+</script>
+</body>
+</html>
