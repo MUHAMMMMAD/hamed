@@ -1,0 +1,205 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Tajawal", "Segoe UI", system-ui, sans-serif;
+  --font-display: "IBM Plex Sans Arabic", "Tajawal", system-ui, sans-serif;
+
+  /* الأساس: رمادي إنشائي بارد بميل بسيط للأزرق */
+  --color-ink-950: #080a0e;
+  --color-ink-900: #0d1016;
+  --color-ink-850: #12161f;
+  --color-ink-800: #171d28;
+  --color-ink-700: #212936;
+  --color-ink-600: #2f3948;
+  --color-ink-500: #465366;
+
+  /* اللون المميّز: مغرة/عنبر — لون معدات البناء وسلامة المواقع */
+  --color-ochre-50: #fdf7ec;
+  --color-ochre-200: #f6dfae;
+  --color-ochre-300: #f0cb80;
+  --color-ochre-400: #e8b25a;
+  --color-ochre-500: #d99a35;
+  --color-ochre-600: #b87a24;
+  --color-ochre-700: #8f5b1c;
+
+  --color-mist-100: #e8ecf2;
+  --color-mist-300: #b3bccb;
+  --color-mist-400: #8b95a5;
+  --color-mist-500: #6b7585;
+
+  --radius-panel: 2px;
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-ink-950);
+    color: var(--color-mist-100);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+  }
+
+  ::selection {
+    background-color: var(--color-ochre-500);
+    color: var(--color-ink-950);
+  }
+
+  /* شريط تمرير يتماشى مع الطابع الداكن */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-ink-900);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-ink-700);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-ink-600);
+  }
+
+  /* الأرقام العربية-الهندية تُقرأ أوضح في السياق العربي */
+  .nums-ar {
+    font-feature-settings: "tnum";
+  }
+}
+
+@layer utilities {
+  /* شبكة مخططات هندسية — الخلفية البصرية الأساسية للموقع */
+  .blueprint {
+    background-image:
+      linear-gradient(to left, rgba(139, 149, 165, 0.06) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(139, 149, 165, 0.06) 1px, transparent 1px);
+    background-size: 56px 56px;
+  }
+
+  .blueprint-fine {
+    background-image:
+      linear-gradient(to left, rgba(139, 149, 165, 0.045) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(139, 149, 165, 0.045) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  /* تلاشٍ شعاعي يُستخدم فوق الشبكة لتركيز البصر في الوسط */
+  .fade-radial {
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 40%, transparent 100%);
+  }
+
+  .text-gradient {
+    background: linear-gradient(160deg, var(--color-mist-100) 20%, var(--color-ochre-400));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* لوح المحتوى: حافة حادة تعكس الطابع الإنشائي بدل الزوايا الدائرية */
+  .panel {
+    background-color: color-mix(in srgb, var(--color-ink-850) 80%, transparent);
+    border: 1px solid var(--color-ink-700);
+    border-radius: var(--radius-panel);
+  }
+
+  .panel-hover {
+    transition:
+      border-color 220ms ease,
+      transform 220ms ease,
+      background-color 220ms ease;
+  }
+  .panel-hover:hover {
+    border-color: var(--color-ochre-600);
+    background-color: color-mix(in srgb, var(--color-ink-800) 90%, transparent);
+    transform: translateY(-3px);
+  }
+
+  /* علامة الزاوية: تفصيلة معمارية متكررة */
+  .corner-mark::before,
+  .corner-mark::after {
+    content: "";
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-color: var(--color-ochre-500);
+    opacity: 0.7;
+  }
+  .corner-mark::before {
+    top: -1px;
+    right: -1px;
+    border-top-width: 2px;
+    border-right-width: 2px;
+  }
+  .corner-mark::after {
+    bottom: -1px;
+    left: -1px;
+    border-bottom-width: 2px;
+    border-left-width: 2px;
+  }
+
+  .rule-label {
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-ochre-400);
+  }
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .animate-rise {
+    animation: rise 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes pulse-dot {
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.35;
+      transform: scale(0.8);
+    }
+  }
+  .animate-pulse-dot {
+    animation: pulse-dot 1.4s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-rise,
+    .animate-pulse-dot {
+      animation: none;
+    }
+    .panel-hover:hover {
+      transform: none;
+    }
+    html {
+      scroll-behavior: auto;
+    }
+  }
+}
